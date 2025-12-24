@@ -1,1 +1,14 @@
-@import '../../styles/vars.css';
+@import "../../styles/vars.css";
+
+.signin {
+  height: 100%;
+}
+
+.main {
+  height: calc(100% - 100px);
+  overflow: auto;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

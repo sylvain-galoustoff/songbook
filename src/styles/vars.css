@@ -6,4 +6,9 @@
   --border: #a5d8ff;
   --white: #fff;
   --text: #27597e;
+
+  --corner: 6px;
+
+  --font: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
