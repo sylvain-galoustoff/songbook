@@ -5,6 +5,7 @@ import { IoCheckmarkDone } from "react-icons/io5";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../../firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { Link } from "react-router";
 
 export default function Signin() {
   const [form, setForm] = useState({
@@ -59,40 +60,48 @@ export default function Signin() {
   return (
     <div className={styles.signin} id="signin">
       <Header />
-      <form className={styles.main} onSubmit={submitSignin}>
-        <div className="form-group">
-          <label htmlFor="pseudo">Votre pseudo</label>
-          <input
-            type="text"
-            id="pseudo"
-            value={form.pseudo}
-            onChange={(e) => setForm({ ...form, pseudo: e.target.value })}
-          />
+      <main className={styles.main}>
+        <div className={`toast ${styles.toast}`}>
+          <p>
+            Déjà Inscrit ? <Link to="/login">Connectez-vous</Link>
+          </p>
         </div>
-        <div className="form-group">
-          <label htmlFor="email">Votre email</label>
-          <input
-            type="email"
-            id="email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="password">Votre mot de passe</label>
-          <input
-            type="password"
-            id="password"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-          />
-        </div>
-        <div className="form-group button-group">
-          <button type="submit">
-            <IoCheckmarkDone /> Valider
-          </button>
-        </div>
-      </form>
+
+        <form className={styles.form} onSubmit={submitSignin}>
+          <div className="form-group">
+            <label htmlFor="pseudo">Votre pseudo</label>
+            <input
+              type="text"
+              id="pseudo"
+              value={form.pseudo}
+              onChange={(e) => setForm({ ...form, pseudo: e.target.value })}
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="email">Votre email</label>
+            <input
+              type="email"
+              id="email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="password">Votre mot de passe</label>
+            <input
+              type="password"
+              id="password"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+            />
+          </div>
+          <div className="form-group button-group">
+            <button type="submit">
+              <IoCheckmarkDone /> Valider
+            </button>
+          </div>
+        </form>
+      </main>
     </div>
   );
 }

@@ -33,3 +33,12 @@
 .pageTitle {
   opacity: 0.8;
 }
+
+.logOut {
+  color: var(--secondary);
+  font-size: 1.5rem;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

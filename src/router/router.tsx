@@ -3,23 +3,32 @@ import Home from "../views/Home/Home";
 import Login from "../views/Login/Login";
 import TrackIndex from "../views/TrackIndex/TrackIndex";
 import Signin from "../views/Signin/Signin";
+import PrivateRoute from "./PrivateRoute";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Home />,
+    element: (
+      <PrivateRoute>
+        <Home />
+      </PrivateRoute>
+    ),
   },
   {
     path: "/signin",
     element: <Signin />,
   },
   {
-    path: "/Login",
+    path: "/login",
     element: <Login />,
   },
   {
     path: "/TrackIndex",
-    element: <TrackIndex />,
+    element: (
+      <PrivateRoute>
+        <TrackIndex />
+      </PrivateRoute>
+    ),
   },
 ]);
 

@@ -49,6 +49,12 @@ body {
   min-height: 100vh;
 }
 
+a {
+  color: var(--text);
+  font-weight: 700;
+  color: var(--primary);
+}
+
 /* FORMS */
 .form-group {
   display: flex;
@@ -99,4 +105,13 @@ button,
   color: var(--white);
   font-weight: 700;
   transition: background-color 0.2s ease-in-out;
+}
+
+/* TOAST */
+.toast {
+  background-color: var(--foreground);
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--corner);
+  color: var(--primary);
 }
