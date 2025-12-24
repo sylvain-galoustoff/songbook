@@ -1,39 +1,25 @@
 import { createBrowserRouter } from "react-router";
 import Home from "../views/Home/Home";
-import Login  from "../views/Login/Login";
+import Login from "../views/Login/Login";
 import TrackIndex from "../views/TrackIndex/TrackIndex";
-import PrivateRoute from "./PrivateRoute";
-
-const isAuthenticated = Boolean(localStorage.getItem("userToken"));
+import Signin from "../views/Signin/Signin";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <PrivateRoute isAuthenticated={isAuthenticated}>
-        <Home />
-      </PrivateRoute>
-    ),
-  },
-  {
-    path: "/signin",
     element: <Home />,
   },
   {
+    path: "/signin",
+    element: <Signin />,
+  },
+  {
     path: "/Login",
-    element: (
-      <PrivateRoute isAuthenticated={isAuthenticated}>
-        <Login />
-      </PrivateRoute>
-    ),
+    element: <Login />,
   },
   {
     path: "/TrackIndex",
-    element: (
-      <PrivateRoute isAuthenticated={isAuthenticated}>
-        <TrackIndex />
-      </PrivateRoute>
-    ),
+    element: <TrackIndex />,
   },
 ]);
 

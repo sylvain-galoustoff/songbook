@@ -1,32 +1,33 @@
-@import 'vars.css';
+@import "reset.css";
+@import "vars.css";
 
 @font-face {
-  font-family: 'Inter';
-  src: url('/src/assets/fonts/inter/Inter-Regular.ttf') format('truetype');
+  font-family: "Inter";
+  src: url("/src/assets/fonts/inter/Inter-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Inter';
-  src: url('/src/assets/fonts/inter/Inter-Bold.ttf') format('truetype');
+  font-family: "Inter";
+  src: url("/src/assets/fonts/inter/Inter-Bold.ttf") format("truetype");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Inter';
-  src: url('/src/assets/fonts/inter/Inter-Black.ttf') format('truetype');
+  font-family: "Inter";
+  src: url("/src/assets/fonts/inter/Inter-Black.ttf") format("truetype");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
 :root {
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-      Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
   line-height: 1.5;
   font-size: 18px;
   font-weight: 400;
@@ -46,5 +47,3 @@ body {
   min-width: 320px;
   min-height: 100vh;
 }
-
-
