@@ -4,6 +4,7 @@ import Login from "../views/Login/Login";
 import TrackIndex from "../views/TrackIndex/TrackIndex";
 import Signin from "../views/Signin/Signin";
 import PrivateRoute from "./PrivateRoute";
+import AddSong from "../views/AddSong/AddSong";
 
 const router = createBrowserRouter([
   {
@@ -15,20 +16,28 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: "/trackIndex",
+    element: (
+      <PrivateRoute>
+        <TrackIndex />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/add-song",
+    element: (
+      <PrivateRoute>
+        <AddSong />
+      </PrivateRoute>
+    ),
+  },
+  {
     path: "/signin",
     element: <Signin />,
   },
   {
     path: "/login",
     element: <Login />,
-  },
-  {
-    path: "/TrackIndex",
-    element: (
-      <PrivateRoute>
-        <TrackIndex />
-      </PrivateRoute>
-    ),
   },
 ]);
 

@@ -86,6 +86,10 @@ label {
   border-color: var(--secondary);
 }
 
+[type="file"] {
+  display: none;
+}
+
 /* BUTTONS */
 .button-group {
   display: flex;

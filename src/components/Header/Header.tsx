@@ -11,6 +11,7 @@ export default function Header() {
     "/": { title: "Accueil" },
     "/signin": { title: "Inscription" },
     "/login": { title: "Connexion" },
+    "/add-song": { title: "Ajouter un morceau" },
   };
 
   return (
