@@ -1,0 +1,26 @@
+.songLine {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+}
+
+.icon {
+  width: 32px;
+  aspect-ratio: 1;
+  background-color: var(--foreground);
+  color: var(--primary);
+  border-radius: var(--corner);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title {
+  font-family: var(--font);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--primary);
+}

@@ -8,6 +8,7 @@ export default function Header() {
   const { logout, user } = useAuth();
 
   const pageParams: Record<string, { title: string }> = {
+    "/": { title: "Accueil" },
     "/signin": { title: "Inscription" },
     "/login": { title: "Connexion" },
   };

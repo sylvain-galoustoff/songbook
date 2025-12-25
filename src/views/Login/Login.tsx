@@ -68,7 +68,7 @@ export default function Login() {
             />
           </div>
           <div className="form-group button-group">
-            <button type="submit">
+            <button className="secondary" type="submit">
               <IoCheckmarkDone /> Valider
             </button>
           </div>
