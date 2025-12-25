@@ -1,7 +1,13 @@
 import styles from "./AddSong.module.css";
 import Header from "../../components/Header/Header";
 import { IoCheckmarkDone } from "react-icons/io5";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { storage, db } from "../../firebase";
+import Loader from "../../components/Loader/Loader";
+import { AnimatePresence, motion } from "motion/react";
+import { useNavigate } from "react-router";
 
 interface AddSongForm {
   title: string;
@@ -13,18 +19,46 @@ export default function AddSong() {
     title: "",
     file: undefined,
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    console.log(form.file?.name);
-  }, [form.file]);
-
-  const submitSong = (e: React.FormEvent) => {
+  const submitSong = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (form.title === "" || form.file === undefined) {
+
+    if (!form.title || !form.file) {
       alert("Veuillez remplir tous les champs du formulaire.");
       return;
     }
-    console.log("Form submitted:", form);
+
+    setIsLoading(true);
+
+    try {
+      // 1. Créer une référence Storage
+      const storageRef = ref(storage, `songs/${Date.now()}_${form.file.name}`);
+
+      // 2. Upload du fichier
+      const snapshot = await uploadBytes(storageRef, form.file);
+
+      // 3. Récupération de l’URL publique
+      const downloadURL = await getDownloadURL(snapshot.ref);
+
+      // 4. Sauvegarde Firestore
+      await addDoc(collection(db, "songs"), {
+        title: form.title,
+        fileName: form.file.name,
+        fileUrl: downloadURL,
+        createdAt: serverTimestamp(),
+      });
+
+      setIsLoading(false);
+      navigate("/");
+
+      // 5. Reset du formulaire
+      setForm({ title: "", file: undefined });
+    } catch (error) {
+      console.error("Erreur upload :", error);
+      alert("Erreur lors de l'envoi du fichier.");
+    }
   };
 
   return (
@@ -42,6 +76,7 @@ export default function AddSong() {
               onChange={(e) => setForm({ ...form, title: e.target.value })}
             />
           </div>
+
           <div className={`form-group button-group ${styles.formGroup}`}>
             <label htmlFor="file" className="button primary">
               Ajouter un fichier .mp3 ou .wav
@@ -59,6 +94,7 @@ export default function AddSong() {
               }}
             />
           </div>
+
           <footer className={styles.footer}>
             <button type="submit" className="button secondary">
               <IoCheckmarkDone /> Valider
@@ -66,6 +102,18 @@ export default function AddSong() {
           </footer>
         </form>
       </div>
+      {isLoading && (
+        <AnimatePresence>
+          <motion.div
+            key="loader"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <Loader message="Envoi en cours" />
+          </motion.div>
+        </AnimatePresence>
+      )}
     </div>
   );
 }
