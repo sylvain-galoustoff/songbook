@@ -41,6 +41,11 @@ export default function Home() {
     <div className={styles.home} id="home">
       <Header />
 
+      {/*
+      TODO: 
+        Afficher "Aucun morceau disponible" si la liste des morceaux est vide
+        Rendre SongLine cliquable pour naviguer vers la page de détails du morceau
+      */}
       <main className={styles.main}>{renderSongsLines}</main>
 
       <footer>
