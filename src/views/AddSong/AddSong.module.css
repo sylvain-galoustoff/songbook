@@ -23,6 +23,11 @@
   padding: 0 32px;
 }
 
+.fileInfo {
+  font-style: italic;
+  font-size: 0.8rem;
+}
+
 .footer {
   margin-top: auto;
 }
