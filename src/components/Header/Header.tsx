@@ -1,18 +1,13 @@
-import { useLocation } from "react-router";
 import styles from "./Header.module.css";
 import { IoMusicalNotes, IoPower } from "react-icons/io5";
 import { useAuth } from "../../context/AuthContext";
 
-export default function Header() {
-  const location = useLocation();
-  const { logout, user } = useAuth();
+interface HeaderProps {
+  title?: string;
+}
 
-  const pageParams: Record<string, { title: string }> = {
-    "/": { title: "Accueil" },
-    "/signin": { title: "Inscription" },
-    "/login": { title: "Connexion" },
-    "/add-song": { title: "Ajouter un morceau" },
-  };
+export default function Header({ title }: HeaderProps) {
+  const { logout, user } = useAuth();
 
   return (
     <header className={styles.header}>
@@ -22,9 +17,7 @@ export default function Header() {
 
       <div className={styles.headerText}>
         <h1 className={styles.pageTitle}>Songbook</h1>
-        <p className={styles.title}>
-          {pageParams[location.pathname]?.title || ""}
-        </p>
+        <p className={styles.title}>{title}</p>
       </div>
 
       {user && (

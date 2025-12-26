@@ -39,7 +39,7 @@ export default function Login() {
 
   return (
     <div className={styles.login} id="login">
-      <Header />
+      <Header title="Connexion" />
 
       <main className={styles.main}>
         <div className={`toast ${styles.toast}`}>

@@ -59,7 +59,7 @@ export default function Signin() {
 
   return (
     <div className={styles.signin} id="signin">
-      <Header />
+      <Header title="Inscription" />
       <main className={styles.main}>
         <div className={`toast ${styles.toast}`}>
           <p>

@@ -33,31 +33,46 @@ export default function AddSong() {
     setIsLoading(true);
 
     try {
-      // 1. Créer une référence Storage
-      const storageRef = ref(storage, `songs/${Date.now()}_${form.file.name}`);
+      /**
+       * 1. Création de la chanson
+       */
+      const songRef = await addDoc(collection(db, "songs"), {
+        title: form.title,
+        createdAt: serverTimestamp(),
+        lastVersion: 1,
+      });
 
-      // 2. Upload du fichier
+      /**
+       * 2. Upload du fichier audio (version 1)
+       */
+      const storageRef = ref(
+        storage,
+        `songs/${songRef.id}/v1_${form.file.name}`
+      );
+
       const snapshot = await uploadBytes(storageRef, form.file);
-
-      // 3. Récupération de l’URL publique
       const downloadURL = await getDownloadURL(snapshot.ref);
 
-      // 4. Sauvegarde Firestore
-      await addDoc(collection(db, "songs"), {
-        title: form.title,
+      /**
+       * 3. Création de la version 1
+       */
+      await addDoc(collection(db, "songs", songRef.id, "versions"), {
+        version: 1,
         fileName: form.file.name,
         fileUrl: downloadURL,
         createdAt: serverTimestamp(),
       });
 
-      setIsLoading(false);
+      /**
+       * 4. Redirection
+       */
       navigate("/");
-
-      // 5. Reset du formulaire
-      setForm({ title: "", file: undefined });
     } catch (error) {
-      console.error("Erreur upload :", error);
-      alert("Erreur lors de l'envoi du fichier.");
+      console.error("Erreur lors de l'ajout du morceau :", error);
+      alert("Une erreur est survenue lors de l'envoi du fichier.");
+    } finally {
+      setIsLoading(false);
+      setForm({ title: "", file: undefined });
     }
   };
 
@@ -81,11 +96,13 @@ export default function AddSong() {
             <label htmlFor="file" className="button primary">
               Ajouter un fichier .mp3 ou .wav
             </label>
+
             {form.file && <p className={styles.fileInfo}>{form.file.name}</p>}
+
             <input
               type="file"
               id="file"
-              accept=".mp3, .wav"
+              accept=".mp3,.wav"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {
@@ -97,13 +114,15 @@ export default function AddSong() {
 
           <footer className={styles.footer}>
             <button type="submit" className="button secondary">
-              <IoCheckmarkDone /> Valider
+              <IoCheckmarkDone />
+              Valider
             </button>
           </footer>
         </form>
       </div>
-      {isLoading && (
-        <AnimatePresence>
+
+      <AnimatePresence>
+        {isLoading && (
           <motion.div
             key="loader"
             initial={{ opacity: 0 }}
@@ -112,8 +131,8 @@ export default function AddSong() {
           >
             <Loader message="Envoi en cours" />
           </motion.div>
-        </AnimatePresence>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }
