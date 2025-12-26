@@ -1,18 +1,25 @@
 import styles from "./Header.module.css";
-import { IoMusicalNotes, IoPower } from "react-icons/io5";
+import { IoArrowBack, IoMusicalNotes, IoPower } from "react-icons/io5";
 import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router";
 
 interface HeaderProps {
   title?: string;
+  backArrow?: boolean;
 }
 
-export default function Header({ title }: HeaderProps) {
+export default function Header({ title, backArrow = false }: HeaderProps) {
   const { logout, user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <header className={styles.header}>
       <div className={styles.icon}>
-        <IoMusicalNotes />
+        {backArrow ? (
+          <IoArrowBack onClick={() => navigate(-1)} />
+        ) : (
+          <IoMusicalNotes />
+        )}
       </div>
 
       <div className={styles.headerText}>

@@ -85,7 +85,7 @@ export default function Song() {
 
   return (
     <div className={styles.song} id="song">
-      <Header title={song?.title} />
+      <Header title={song?.title} backArrow />
 
       <main className={styles.main}>
         {loading && <p>Chargement…</p>}
