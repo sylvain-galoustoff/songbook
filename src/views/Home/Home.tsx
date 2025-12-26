@@ -11,10 +11,13 @@ import NoSongsFound from "../../components/NoSongsFound/NoSongsFound";
 
 export default function Home() {
   const [songs, setSongs] = useState<Song[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSongs = async () => {
+      setIsLoading(true);
+
       try {
         const q = query(collection(db, "songs"), orderBy("title", "asc"));
 
@@ -26,8 +29,10 @@ export default function Home() {
         }));
 
         setSongs(songsData);
+        setIsLoading(false);
       } catch (error) {
         console.error("Erreur chargement songs :", error);
+        setIsLoading(false);
       }
     };
 
@@ -40,11 +45,13 @@ export default function Home() {
 
   return (
     <div className={styles.home} id="home">
-      <Header />
+      <Header title="Vos chansons" />
 
-      <main className={styles.main}>
-        {songs.length > 0 ? renderSongsLines : <NoSongsFound />}
-      </main>
+      {isLoading === false && (
+        <main className={styles.main}>
+          {songs.length > 0 ? renderSongsLines : <NoSongsFound />}
+        </main>
+      )}
 
       <footer>
         <button
