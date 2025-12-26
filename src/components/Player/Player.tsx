@@ -4,7 +4,7 @@ import { IoPlay, IoPause, IoChatbox } from "react-icons/io5";
 import { useEffect, useState } from "react";
 
 export default function Player() {
-  const { currentAudio, currentVersion, isPlaying, togglePlay } = useAudio();
+  const { currentAudio, isPlaying, togglePlay } = useAudio();
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
