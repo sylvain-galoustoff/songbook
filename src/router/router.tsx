@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router";
 import Home from "../views/Home/Home";
 import Login from "../views/Login/Login";
-import TrackIndex from "../views/TrackIndex/TrackIndex";
+import TrackIndex from "../views/Song/Song";
 import Signin from "../views/Signin/Signin";
 import PrivateRoute from "./PrivateRoute";
 import AddSong from "../views/AddSong/AddSong";
@@ -16,7 +16,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/trackIndex",
+    path: "/song/:id",
     element: (
       <PrivateRoute>
         <TrackIndex />
