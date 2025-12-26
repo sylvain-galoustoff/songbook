@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import { db } from "../../firebase";
 import type { Song } from "../../types/Songs";
+import NoSongsFound from "../../components/NoSongsFound/NoSongsFound";
 
 export default function Home() {
   const [songs, setSongs] = useState<Song[]>([]);
@@ -30,11 +31,11 @@ export default function Home() {
       }
     };
 
-    fetchSongs();
+    // fetchSongs();
   }, []);
 
   const renderSongsLines = songs.map((song) => (
-    <SongLine key={song.id} title={song.title} />
+    <SongLine key={song.id} title={song.title} id={song.id} />
   ));
 
   return (
@@ -44,9 +45,10 @@ export default function Home() {
       {/*
       TODO: 
         Afficher "Aucun morceau disponible" si la liste des morceaux est vide
-        Rendre SongLine cliquable pour naviguer vers la page de détails du morceau
       */}
-      <main className={styles.main}>{renderSongsLines}</main>
+      <main className={styles.main}>
+        {songs.length > 0 ? renderSongsLines : <NoSongsFound />}
+      </main>
 
       <footer>
         <button
