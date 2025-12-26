@@ -13,14 +13,13 @@ export default function Version({
   date,
   fileUrl,
 }: VersionProps) {
-  const { playAudio, currentVersion, isPlaying } = useAudio();
+  const { playAudio, currentVersion } = useAudio();
 
   const handleClick = () => {
     playAudio(fileUrl, { versionNumber });
   };
 
-  const isCurrent =
-    currentVersion?.versionNumber === versionNumber && isPlaying;
+  const isCurrent = currentVersion?.versionNumber === versionNumber;
 
   return (
     <div className={styles.version} onClick={handleClick}>
