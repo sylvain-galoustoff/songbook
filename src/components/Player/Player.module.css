@@ -1,0 +1,31 @@
+.player {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.playIcon {
+  color: var(--secondary);
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.commentsIcon {
+  color: var(--secondary);
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.progressBar {
+  flex: 1;
+  height: 4px;
+  background-color: #da77f2;
+  position: relative;
+}
+
+.progress {
+  width: 50%;
+  height: 100%;
+  background-color: var(--secondary);
+}
