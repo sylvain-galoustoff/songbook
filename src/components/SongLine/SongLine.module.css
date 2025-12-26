@@ -25,3 +25,8 @@
   font-weight: 700;
   color: var(--primary);
 }
+
+.caret {
+  margin-left: auto;
+  color: var(--primary);
+}

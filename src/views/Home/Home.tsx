@@ -31,7 +31,7 @@ export default function Home() {
       }
     };
 
-    // fetchSongs();
+    fetchSongs();
   }, []);
 
   const renderSongsLines = songs.map((song) => (
@@ -42,10 +42,6 @@ export default function Home() {
     <div className={styles.home} id="home">
       <Header />
 
-      {/*
-      TODO: 
-        Afficher "Aucun morceau disponible" si la liste des morceaux est vide
-      */}
       <main className={styles.main}>
         {songs.length > 0 ? renderSongsLines : <NoSongsFound />}
       </main>

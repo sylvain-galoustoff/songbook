@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import styles from "./SongLine.module.css";
-import { IoMusicalNote } from "react-icons/io5";
+import { IoMusicalNote, IoCaretForward } from "react-icons/io5";
 
 interface SongLineProps {
   id: string;
@@ -14,6 +14,7 @@ export default function SongLine({ title, id }: SongLineProps) {
         <IoMusicalNote />
       </div>
       <div className={styles.title}>{title}</div>
+      <IoCaretForward className={styles.caret} />
     </Link>
   );
 }
