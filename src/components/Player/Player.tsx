@@ -1,11 +1,12 @@
 import { useAudio } from "../../context/AudioContext";
 import styles from "./Player.module.css";
 import { IoPlay, IoPause, IoChatbox } from "react-icons/io5";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function Player() {
   const { currentAudio, isPlaying, togglePlay } = useAudio();
   const [progress, setProgress] = useState(0);
+  const progressBarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!currentAudio) return;
@@ -23,6 +24,17 @@ export default function Player() {
     };
   }, [currentAudio]);
 
+  const handleClickProgress = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!currentAudio || !progressBarRef.current) return;
+
+    const rect = progressBarRef.current.getBoundingClientRect();
+    const clickX = e.clientX - rect.left; // position du clic dans la barre
+    const newTime = (clickX / rect.width) * currentAudio.duration;
+
+    currentAudio.currentTime = newTime;
+    setProgress((newTime / currentAudio.duration) * 100);
+  };
+
   return (
     <div className={styles.player}>
       <IoChatbox className={styles.commentsIcon} />
@@ -31,7 +43,11 @@ export default function Player() {
       ) : (
         <IoPlay className={styles.playIcon} onClick={togglePlay} />
       )}
-      <div className={styles.progressBar}>
+      <div
+        className={styles.progressBar}
+        ref={progressBarRef}
+        onClick={handleClickProgress}
+      >
         <div className={styles.progress} style={{ width: `${progress}%` }} />
       </div>
       <p className={styles.currentTime}>
