@@ -1,14 +1,17 @@
 import { IoThumbsDownSharp, IoThumbsUpSharp } from "react-icons/io5";
 import styles from "./ChatBubble.module.css";
+import type { CommentType } from "../../types/Comment";
 
-export default function ChatBubble() {
+interface ChatBubbleProps {
+  comment: CommentType;
+}
+
+export default function ChatBubble({ comment }: ChatBubbleProps) {
   return (
     <div className={`${styles.wrapper} ${styles.notMe}`}>
       <div className={styles.chatBubble}>
-        <div className={styles.header}>Sylvain</div>
-        <div className={styles.message}>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit.
-        </div>
+        <div className={styles.header}>{comment.userName}</div>
+        <div className={styles.message}>{comment.message}</div>
         <div className={styles.likesWrapper}>
           <div className={`${styles.likeIcon}`}>
             <IoThumbsDownSharp className={styles.thumb} />

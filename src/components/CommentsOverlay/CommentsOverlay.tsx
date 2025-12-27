@@ -8,6 +8,7 @@ import { useAudio } from "../../context/AudioContext";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useParams } from "react-router";
+import { useCommentsAtTime } from "../../hooks/useCommentsAtTime";
 
 interface CommentsOverlayProps {
   timecode: number;
@@ -21,7 +22,9 @@ export default function CommentsOverlay({
   const [message, setMessage] = useState("");
   const { user, profile } = useAuth();
   const { versionId } = useAudio();
-  const params = useParams();
+  const { id: songId } = useParams();
+
+  const comments = useCommentsAtTime(songId, versionId, timecode);
 
   const submitMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +34,6 @@ export default function CommentsOverlay({
     }
 
     try {
-      const songId = params.id;
       if (songId === undefined) return;
 
       const commentsRef = collection(
@@ -71,11 +73,11 @@ export default function CommentsOverlay({
       </header>
       <div className={styles.body}>
         <div className={styles.commentsList}>
-          <ChatBubble />
-          <ChatBubble />
-          <ChatBubble />
-          <ChatBubble />
+          {comments.map((comment) => (
+            <ChatBubble key={comment.id} comment={comment} />
+          ))}
         </div>
+
         <form className={styles.addComment} onSubmit={submitMessage}>
           <textarea
             className={styles.textarea}
