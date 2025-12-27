@@ -3,13 +3,15 @@ import { getDownloadURL, ref } from "firebase/storage";
 import { storage } from "../firebase";
 
 interface VersionInfo {
-  versionNumber: number;
   title?: string;
+  versionNumber: number;
 }
 
 interface AudioContextType {
   currentAudio: HTMLAudioElement | null;
   currentVersion: VersionInfo | null;
+  versionId: string | undefined;
+  setVersionId: (id: string) => void;
   isPlaying: boolean;
   playAudio: (audioPath: string, version: VersionInfo) => void;
   togglePlay: () => void;
@@ -24,6 +26,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const [currentVersion, setCurrentVersion] = useState<VersionInfo | null>(
     null
   );
+  const [versionId, setVersionId] = useState<string | undefined>(undefined);
   const [isPlaying, setIsPlaying] = useState(false);
 
   // Cache pour stocker les URLs des fichiers déjà téléchargés
@@ -72,7 +75,15 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
   return (
     <AudioContext.Provider
-      value={{ currentAudio, currentVersion, isPlaying, playAudio, togglePlay }}
+      value={{
+        currentAudio,
+        currentVersion,
+        versionId,
+        setVersionId,
+        isPlaying,
+        playAudio,
+        togglePlay,
+      }}
     >
       {children}
     </AudioContext.Provider>

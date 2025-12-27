@@ -4,19 +4,22 @@ import { IoPlay } from "react-icons/io5";
 
 interface VersionProps {
   versionNumber: number;
+  versionId: string;
   date: any;
   fileUrl: string;
 }
 
 export default function Version({
+  versionId,
   versionNumber,
   date,
   fileUrl,
 }: VersionProps) {
-  const { playAudio, currentVersion } = useAudio();
+  const { playAudio, currentVersion, setVersionId } = useAudio();
 
   const handleClick = () => {
     playAudio(fileUrl, { versionNumber });
+    setVersionId(versionId);
   };
 
   const isCurrent = currentVersion?.versionNumber === versionNumber;

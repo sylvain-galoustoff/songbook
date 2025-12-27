@@ -1,0 +1,61 @@
+.wrapper {
+  display: flex;
+}
+
+.wrapper.me {
+  justify-content: flex-end;
+}
+
+.wrapper.notMe {
+  justify-content: flex-start;
+}
+
+.chatBubble {
+  width: 75%;
+  border: 1px solid var(--border);
+  border-radius: var(--corner);
+  position: relative;
+}
+
+.header {
+  background-color: var(--accent);
+  padding: 8px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  border-top-left-radius: var(--corner);
+  border-top-right-radius: var(--corner);
+}
+
+.message {
+  background-color: var(--foreground);
+  padding: 8px;
+  padding-bottom: 16px;
+  font-size: 0.9rem;
+  line-height: 1.25;
+  border-bottom-left-radius: var(--corner);
+  border-bottom-right-radius: var(--corner);
+}
+
+.likesWrapper {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  gap: 8px;
+  transform: translateY(50%);
+  font-size: 0.8rem;
+}
+
+.likeIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background-color: var(--white);
+  padding: 6px;
+}
+
+.thumb {
+  opacity: 0.33;
+}

@@ -33,11 +33,8 @@ export default function Song() {
   const addComment = () => {
     if (!currentAudio) return;
 
-    console.log(currentAudio);
-
     if (commentsTime === undefined) {
       setCommentsTime(currentAudio.currentTime);
-      console.log("Ajouter un commentaire a la position :", commentsTime);
     } else {
       setCommentsTime(undefined);
     }
@@ -96,6 +93,7 @@ export default function Song() {
   const renderVersions = versions.map((version) => (
     <Version
       key={version.id}
+      versionId={version.id}
       versionNumber={version.version}
       date={version.createdAt}
       fileUrl={version.fileUrl}
@@ -122,7 +120,10 @@ export default function Song() {
         )}
 
         {commentsTime !== undefined && (
-          <CommentsOverlay timecode={commentsTime} />
+          <CommentsOverlay
+            timecode={commentsTime}
+            closeOverlay={() => setCommentsTime(undefined)}
+          />
         )}
       </main>
 
