@@ -3,7 +3,11 @@ import styles from "./Player.module.css";
 import { IoPlay, IoPause, IoChatbox } from "react-icons/io5";
 import { useEffect, useState, useRef } from "react";
 
-export default function Player() {
+interface PlayerProps {
+  addComment: () => void;
+}
+
+export default function Player({ addComment }: PlayerProps) {
   const { currentAudio, isPlaying, togglePlay } = useAudio();
   const [progress, setProgress] = useState(0);
   const progressBarRef = useRef<HTMLDivElement>(null);
@@ -37,7 +41,7 @@ export default function Player() {
 
   return (
     <div className={styles.player}>
-      <IoChatbox className={styles.commentsIcon} />
+      <IoChatbox className={styles.commentsIcon} onClick={addComment} />
       {isPlaying ? (
         <IoPause className={styles.playIcon} onClick={togglePlay} />
       ) : (
