@@ -39,7 +39,7 @@ h2 {
   justify-content: flex-end;
   gap: 32px;
   overflow-y: auto;
-  padding-bottom: 16px;
+  padding-bottom: 32px;
 }
 
 .addComment {

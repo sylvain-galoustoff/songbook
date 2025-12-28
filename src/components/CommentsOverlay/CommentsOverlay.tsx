@@ -1,14 +1,14 @@
 import { IoCloseCircle, IoSend } from "react-icons/io5";
 import { formatMinutesSeconds } from "../../utils/formatTime";
 import styles from "./CommentsOverlay.module.css";
-import ChatBubble from "../ChatBubble/ChatBubble";
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useAudio } from "../../context/AudioContext";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useParams } from "react-router";
-import { useCommentsAtTime } from "../../hooks/useCommentsAtTime";
+import { useCommentsForVersion } from "../../hooks/useCommentsForVersion";
+import ChatBubble from "../ChatBubble/ChatBubble";
 
 interface CommentsOverlayProps {
   timecode: number;
@@ -22,20 +22,18 @@ export default function CommentsOverlay({
   const [message, setMessage] = useState("");
   const { user, profile } = useAuth();
   const { versionId } = useAudio();
-  const { id: songId } = useParams();
+  const { id: songId } = useParams<{ id: string }>();
 
-  const comments = useCommentsAtTime(songId, versionId, timecode);
+  const { comments } = useCommentsForVersion({
+    songId,
+    versionId,
+  });
 
   const submitMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!user || !versionId || message.trim() === "") {
-      return;
-    }
+    if (!user || !songId || !versionId || message.trim() === "") return;
 
     try {
-      if (songId === undefined) return;
-
       const commentsRef = collection(
         db,
         "songs",
@@ -61,16 +59,13 @@ export default function CommentsOverlay({
     }
   };
 
-  const closeComments = () => {
-    closeOverlay();
-  };
-
   return (
     <div className={styles.commentsOverlay}>
       <header className={`toast ${styles.commentsToast}`}>
         <h2>Commentaires à {formatMinutesSeconds(timecode)}</h2>
-        <IoCloseCircle className={styles.closeButton} onClick={closeComments} />
+        <IoCloseCircle className={styles.closeButton} onClick={closeOverlay} />
       </header>
+
       <div className={styles.body}>
         <div className={styles.commentsList}>
           {comments.map((comment) => (

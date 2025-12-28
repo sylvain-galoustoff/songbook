@@ -57,5 +57,13 @@
 }
 
 .thumb {
-  opacity: 0.33;
+  transition: all 0.15s ease-out;
+}
+
+.thumb.dislikeActive {
+  color: red;
+}
+
+.thumb.likeActive {
+  color: green;
 }
