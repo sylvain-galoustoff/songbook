@@ -15,6 +15,7 @@ interface AudioContextType {
   isPlaying: boolean;
   playAudio: (audioPath: string, version: VersionInfo) => void;
   togglePlay: () => void;
+  seekTo: (timecode: number) => void;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -73,6 +74,17 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const seekTo = (timecode: number) => {
+    if (!currentAudio) return;
+
+    currentAudio.currentTime = timecode;
+
+    if (!isPlaying) {
+      currentAudio.play();
+      setIsPlaying(true);
+    }
+  };
+
   return (
     <AudioContext.Provider
       value={{
@@ -83,6 +95,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         isPlaying,
         playAudio,
         togglePlay,
+        seekTo,
       }}
     >
       {children}

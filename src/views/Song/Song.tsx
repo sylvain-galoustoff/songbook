@@ -34,7 +34,7 @@ export default function Song() {
   );
 
   const { id } = useParams<{ id: string }>();
-  const { currentAudio, versionId } = useAudio();
+  const { currentAudio, versionId, seekTo } = useAudio();
 
   const addComment = () => {
     if (!currentAudio) return;
@@ -49,6 +49,7 @@ export default function Song() {
   const showMarkerComments = (index: number, timecode: number) => {
     setMarkerActive(index);
     setCommentsTime(timecode);
+    seekTo(timecode);
   };
 
   useEffect(() => {
@@ -110,7 +111,7 @@ export default function Song() {
     };
 
     loadMarkers();
-  }, [id, versions]);
+  }, [id, versions, versionId]);
 
   const renderVersions = versions.map((version) => (
     <Version
