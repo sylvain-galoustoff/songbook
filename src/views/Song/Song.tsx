@@ -19,6 +19,7 @@ import Player from "../../components/Player/Player";
 import { useAudio } from "../../context/AudioContext";
 import CommentsOverlay from "../../components/CommentsOverlay/CommentsOverlay";
 import CommentMarker from "../../components/CommentMarker/CommentMarker";
+import { fetchCommentTimecodes } from "../../utils/fetchCommentTimecodes";
 
 export default function Song() {
   const [song, setSong] = useState<Song | undefined>();
@@ -27,9 +28,10 @@ export default function Song() {
   const [commentsTime, setCommentsTime] = useState<number | undefined>(
     undefined
   );
+  const [commentMarkers, setCommentMarkers] = useState<number[]>([]);
 
   const { id } = useParams<{ id: string }>();
-  const { currentAudio } = useAudio();
+  const { currentAudio, versionId } = useAudio();
 
   const addComment = () => {
     if (!currentAudio) return;
@@ -91,6 +93,17 @@ export default function Song() {
     fetchSongAndVersions();
   }, [id]);
 
+  useEffect(() => {
+    if (!id || versionId === undefined) return;
+
+    const loadMarkers = async () => {
+      const timecodes = await fetchCommentTimecodes(id, versionId);
+      setCommentMarkers(timecodes);
+    };
+
+    loadMarkers();
+  }, [id, versions]);
+
   const renderVersions = versions.map((version) => (
     <Version
       key={version.id}
@@ -99,6 +112,10 @@ export default function Song() {
       date={version.createdAt}
       fileUrl={version.fileUrl}
     />
+  ));
+
+  const renderMarker = commentMarkers.map((marker) => (
+    <CommentMarker key={marker} timecode={marker} />
   ));
 
   return (
@@ -120,14 +137,7 @@ export default function Song() {
           </>
         )}
 
-        <div className={styles.commentsMarkers}>
-          <CommentMarker />
-          <CommentMarker isActive={true} />
-          <CommentMarker />
-          <CommentMarker />
-          <CommentMarker />
-          <CommentMarker />
-        </div>
+        <div className={styles.commentsMarkers}>{renderMarker}</div>
 
         {commentsTime !== undefined && (
           <CommentsOverlay

@@ -1,11 +1,14 @@
+import { formatMinutesSeconds } from "../../utils/formatTime";
 import styles from "./CommentMarker.module.css";
 import { IoChatbox, IoChatboxOutline } from "react-icons/io5";
 
 interface CommentMarkerProps {
+  timecode: number;
   isActive?: boolean;
 }
 
 export default function CommentMarker({
+  timecode,
   isActive = false,
 }: CommentMarkerProps) {
   return (
@@ -16,7 +19,7 @@ export default function CommentMarker({
         <IoChatboxOutline className={styles.icon} />
       )}
       <p className={styles.text}>
-        <span className={styles.value}>00:05</span>
+        <span className={styles.value}>{formatMinutesSeconds(timecode)}</span>
       </p>
     </div>
   );
