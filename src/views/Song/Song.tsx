@@ -18,6 +18,7 @@ import Version from "../../components/Version/Version";
 import Player from "../../components/Player/Player";
 import { useAudio } from "../../context/AudioContext";
 import CommentsOverlay from "../../components/CommentsOverlay/CommentsOverlay";
+import CommentMarker from "../../components/CommentMarker/CommentMarker";
 
 export default function Song() {
   const [song, setSong] = useState<Song | undefined>();
@@ -118,6 +119,15 @@ export default function Song() {
             </div>
           </>
         )}
+
+        <div className={styles.commentsMarkers}>
+          <CommentMarker />
+          <CommentMarker isActive={true} />
+          <CommentMarker />
+          <CommentMarker />
+          <CommentMarker />
+          <CommentMarker />
+        </div>
 
         {commentsTime !== undefined && (
           <CommentsOverlay

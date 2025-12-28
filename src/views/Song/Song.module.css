@@ -38,3 +38,12 @@
   gap: 16px;
   padding: 16px 0;
 }
+
+.commentsMarkers {
+  margin-top: auto;
+  display: flex;
+  gap: 16px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
