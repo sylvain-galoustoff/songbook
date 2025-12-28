@@ -156,6 +156,7 @@ export default function ChatBubble({ comment }: ChatBubbleProps) {
         <div className={styles.message}>{comment.message}</div>
         <div className={styles.likesWrapper}>
           <div className={`${styles.likeIcon}`} onClick={dislike}>
+            <span className={styles.count}>{comment.dislikesCount}</span>
             <IoThumbsDownSharp
               className={`${styles.thumb} ${
                 comment.myVote === -1 ? styles.dislikeActive : undefined
@@ -163,6 +164,7 @@ export default function ChatBubble({ comment }: ChatBubbleProps) {
             />
           </div>
           <div className={`${styles.likeIcon}`} onClick={like}>
+            <span className={styles.count}>{comment.likesCount}</span>
             <IoThumbsUpSharp
               className={`${styles.thumb} ${
                 comment.myVote === 1 ? styles.likeActive : undefined
