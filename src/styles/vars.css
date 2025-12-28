@@ -1,11 +1,13 @@
 :root {
   --background: #e7f5ff;
   --foreground: #d0ebff;
+  --accent: #74c0fc;
   --primary: #228be6;
   --secondary: #be4bdb;
   --border: #a5d8ff;
   --white: #fff;
   --text: #27597e;
+  --overlay: rgb(231, 245, 255, 0.9);
 
   --corner: 6px;
 

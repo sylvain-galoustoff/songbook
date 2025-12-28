@@ -35,10 +35,11 @@
 }
 
 .logOut {
-  color: var(--secondary);
-  font-size: 1.5rem;
+  color: var(--primary);
   margin-left: auto;
   display: flex;
   align-items: center;
   justify-content: center;
+  align-self: self-end;
+  padding: 32px 0;
 }

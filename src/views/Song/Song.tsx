@@ -16,13 +16,29 @@ import type { VersionType } from "../../types/Version";
 import { IoAddCircle } from "react-icons/io5";
 import Version from "../../components/Version/Version";
 import Player from "../../components/Player/Player";
+import { useAudio } from "../../context/AudioContext";
+import CommentsOverlay from "../../components/CommentsOverlay/CommentsOverlay";
 
 export default function Song() {
   const [song, setSong] = useState<Song | undefined>();
   const [versions, setVersions] = useState<VersionType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [commentsTime, setCommentsTime] = useState<number | undefined>(
+    undefined
+  );
 
   const { id } = useParams<{ id: string }>();
+  const { currentAudio } = useAudio();
+
+  const addComment = () => {
+    if (!currentAudio) return;
+
+    if (commentsTime === undefined) {
+      setCommentsTime(currentAudio.currentTime);
+    } else {
+      setCommentsTime(undefined);
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -77,6 +93,7 @@ export default function Song() {
   const renderVersions = versions.map((version) => (
     <Version
       key={version.id}
+      versionId={version.id}
       versionNumber={version.version}
       date={version.createdAt}
       fileUrl={version.fileUrl}
@@ -101,10 +118,17 @@ export default function Song() {
             </div>
           </>
         )}
+
+        {commentsTime !== undefined && (
+          <CommentsOverlay
+            timecode={commentsTime}
+            closeOverlay={() => setCommentsTime(undefined)}
+          />
+        )}
       </main>
 
       <footer>
-        <Player />
+        <Player addComment={addComment} />
       </footer>
     </div>
   );
