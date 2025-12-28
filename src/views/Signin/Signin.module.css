@@ -2,6 +2,7 @@
 
 .signin {
   height: 100%;
+  background-color: var(--background);
 }
 
 .main {
