@@ -29,6 +29,9 @@ export default function Song() {
     undefined
   );
   const [commentMarkers, setCommentMarkers] = useState<number[]>([]);
+  const [markerActive, setMarkerActive] = useState<number | undefined>(
+    undefined
+  );
 
   const { id } = useParams<{ id: string }>();
   const { currentAudio, versionId } = useAudio();
@@ -41,6 +44,11 @@ export default function Song() {
     } else {
       setCommentsTime(undefined);
     }
+  };
+
+  const showMarkerComments = (index: number, timecode: number) => {
+    setMarkerActive(index);
+    setCommentsTime(timecode);
   };
 
   useEffect(() => {
@@ -114,8 +122,14 @@ export default function Song() {
     />
   ));
 
-  const renderMarker = commentMarkers.map((marker) => (
-    <CommentMarker key={marker} timecode={marker} />
+  const renderMarker = commentMarkers.map((marker, index) => (
+    <CommentMarker
+      key={marker}
+      timecode={marker}
+      index={index}
+      isActive={markerActive === index && true}
+      setMarkerActive={showMarkerComments}
+    />
   ));
 
   return (
@@ -137,8 +151,6 @@ export default function Song() {
           </>
         )}
 
-        <div className={styles.commentsMarkers}>{renderMarker}</div>
-
         {commentsTime !== undefined && (
           <CommentsOverlay
             timecode={commentsTime}
@@ -146,6 +158,8 @@ export default function Song() {
           />
         )}
       </main>
+
+      <div className={styles.commentsMarkers}>{renderMarker}</div>
 
       <footer>
         <Player addComment={addComment} />
