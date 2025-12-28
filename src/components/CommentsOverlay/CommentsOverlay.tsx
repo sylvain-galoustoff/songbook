@@ -29,6 +29,10 @@ export default function CommentsOverlay({
     versionId,
   });
 
+  const filteredComments = comments.filter(
+    (c) => Math.abs(c.timecode - timecode) <= 1
+  );
+
   const submitMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !songId || !versionId || message.trim() === "") return;
@@ -68,7 +72,7 @@ export default function CommentsOverlay({
 
       <div className={styles.body}>
         <div className={styles.commentsList}>
-          {comments.map((comment) => (
+          {filteredComments.map((comment) => (
             <ChatBubble key={comment.id} comment={comment} />
           ))}
         </div>

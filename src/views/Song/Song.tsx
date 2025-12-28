@@ -18,6 +18,8 @@ import Version from "../../components/Version/Version";
 import Player from "../../components/Player/Player";
 import { useAudio } from "../../context/AudioContext";
 import CommentsOverlay from "../../components/CommentsOverlay/CommentsOverlay";
+import CommentMarker from "../../components/CommentMarker/CommentMarker";
+import { fetchCommentTimecodes } from "../../utils/fetchCommentTimecodes";
 
 export default function Song() {
   const [song, setSong] = useState<Song | undefined>();
@@ -26,9 +28,13 @@ export default function Song() {
   const [commentsTime, setCommentsTime] = useState<number | undefined>(
     undefined
   );
+  const [commentMarkers, setCommentMarkers] = useState<number[]>([]);
+  const [markerActive, setMarkerActive] = useState<number | undefined>(
+    undefined
+  );
 
   const { id } = useParams<{ id: string }>();
-  const { currentAudio } = useAudio();
+  const { currentAudio, versionId, seekTo } = useAudio();
 
   const addComment = () => {
     if (!currentAudio) return;
@@ -38,6 +44,12 @@ export default function Song() {
     } else {
       setCommentsTime(undefined);
     }
+  };
+
+  const showMarkerComments = (index: number, timecode: number) => {
+    setMarkerActive(index);
+    setCommentsTime(timecode);
+    seekTo(timecode);
   };
 
   useEffect(() => {
@@ -90,6 +102,17 @@ export default function Song() {
     fetchSongAndVersions();
   }, [id]);
 
+  useEffect(() => {
+    if (!id || versionId === undefined) return;
+
+    const loadMarkers = async () => {
+      const timecodes = await fetchCommentTimecodes(id, versionId);
+      setCommentMarkers(timecodes);
+    };
+
+    loadMarkers();
+  }, [id, versions, versionId]);
+
   const renderVersions = versions.map((version) => (
     <Version
       key={version.id}
@@ -97,6 +120,16 @@ export default function Song() {
       versionNumber={version.version}
       date={version.createdAt}
       fileUrl={version.fileUrl}
+    />
+  ));
+
+  const renderMarker = commentMarkers.map((marker, index) => (
+    <CommentMarker
+      key={marker}
+      timecode={marker}
+      index={index}
+      isActive={markerActive === index && true}
+      setMarkerActive={showMarkerComments}
     />
   ));
 
@@ -126,6 +159,8 @@ export default function Song() {
           />
         )}
       </main>
+
+      <div className={styles.commentsMarkers}>{renderMarker}</div>
 
       <footer>
         <Player addComment={addComment} />
