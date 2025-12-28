@@ -51,6 +51,13 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background-color: #07426d;
+}
+
+#root {
+  max-width: 400px;
+  margin: auto;
+  background-color: var(--background);
 }
 
 a {
