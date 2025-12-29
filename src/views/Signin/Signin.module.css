@@ -1,0 +1,20 @@
+.signin {
+  height: 100%;
+  background-color: var(--background);
+}
+
+.main {
+  height: calc(100% - 100px);
+  overflow: auto;
+  padding: 32px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.toast {
+  margin-bottom: 32px;
+}
