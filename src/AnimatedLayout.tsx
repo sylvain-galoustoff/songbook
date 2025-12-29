@@ -1,7 +1,6 @@
 import { Outlet, useLocation } from "react-router";
 import { useRef, type JSX } from "react";
 import Header from "./components/Header/Header";
-import Footer from "./components/Footer/Footer";
 import { AnimatePresence, motion } from "motion/react";
 import HomeFooter from "./views/Home/HomeFooter";
 
@@ -44,6 +43,7 @@ export default function AnimatedLayout() {
   const titles: Record<string, string> = {
     "/login": "Connexion",
     "/signin": "Inscription",
+    "/": "Vos titres",
   };
 
   const withFooterPages: string[] = ["/"];

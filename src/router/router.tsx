@@ -5,6 +5,7 @@ import Home from "../views/Home/Home";
 import Login from "../views/Login/Login";
 import Signin from "../views/Signin/Signin";
 import AddSong from "../views/AddSong/AddSong";
+import Song from "../views/song/Song";
 
 const router = createBrowserRouter([
   {
@@ -31,6 +32,14 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <AddSong />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/song/:id",
+        element: (
+          <PrivateRoute>
+            <Song />
           </PrivateRoute>
         ),
       },
