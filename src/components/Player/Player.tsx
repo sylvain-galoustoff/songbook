@@ -2,10 +2,12 @@ import { useAudio } from "../../context/AudioContext";
 import styles from "./Player.module.css";
 import { IoPlay, IoPause, IoChatbox } from "react-icons/io5";
 import { useEffect, useState, useRef } from "react";
+import { useComments } from "../../context/CommentsContext";
 
 export default function Player() {
-  const { currentAudio, isPlaying, togglePlay } = useAudio();
+  const { currentAudio, isPlaying, togglePlay, versionId } = useAudio();
   const [progress, setProgress] = useState(0);
+  const { commentsTime, setCommentsTime } = useComments();
   const progressBarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,8 +38,18 @@ export default function Player() {
   };
 
   const addComment = () => {
-    console.log("add comment");
+    if (!currentAudio) return;
+
+    if (commentsTime === undefined) {
+      setCommentsTime(currentAudio.currentTime);
+    } else {
+      setCommentsTime(undefined);
+    }
   };
+
+  if (versionId === undefined) {
+    return <p className={styles.noChoice}>Choisissez une piste audio</p>;
+  }
 
   return (
     <div className={styles.player}>

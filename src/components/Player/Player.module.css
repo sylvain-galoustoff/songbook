@@ -1,3 +1,10 @@
+.noChoice {
+  width: 100%;
+  text-align: center;
+  color: var(--secondary);
+  font-weight: 700;
+}
+
 .player {
   width: 100%;
   display: flex;

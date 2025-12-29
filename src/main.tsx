@@ -6,12 +6,15 @@ import router from "./router/router";
 import { RouterProvider } from "react-router/dom";
 import { AuthProvider } from "./context/AuthContext";
 import { AudioProvider } from "./context/AudioContext";
+import { CommentsProvider } from "./context/CommentsContext";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AuthProvider>
       <AudioProvider>
-        <RouterProvider router={router} />
+        <CommentsProvider>
+          <RouterProvider router={router} />
+        </CommentsProvider>
       </AudioProvider>
     </AuthProvider>
   </StrictMode>
