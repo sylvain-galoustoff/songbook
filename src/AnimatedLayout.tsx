@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from "react-router";
 import { useRef } from "react";
 import Header from "./components/Header/Header";
+import Footer from "./components/Footer/Footer";
 
 export const pushVariants = {
   initial: (direction: number) => ({
@@ -23,13 +24,29 @@ export default function AnimatedLayout() {
 
   previousPath.current = location.pathname;
 
+  const titles: Record<string, string> = {
+    "/login": "Connexion",
+    "/signin": "Inscription",
+  };
+
+  const withFooterPages: string[] = [];
+
   return (
     <div id="app">
-      <Header />
+      <Header title={location.pathname && titles[location.pathname]} />
 
-      <div key={location.pathname} className="animated-wrapper">
+      <div
+        key={location.pathname}
+        className={`animated-wrapper ${
+          withFooterPages.includes(location.pathname)
+            ? "with-footer"
+            : undefined
+        }`}
+      >
         <Outlet />
       </div>
+
+      {withFooterPages.includes(location.pathname) && <Footer />}
     </div>
   );
 }

@@ -3,7 +3,7 @@ import styles from "./Signin.module.css";
 
 export default function Signin() {
   return (
-    <div className={styles.signin} id="Signin">
+    <div className="page" id="Signin">
       Signin page
       <Link to="/login">Login page</Link>
     </div>
