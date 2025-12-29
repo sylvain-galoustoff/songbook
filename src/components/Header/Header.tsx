@@ -4,36 +4,37 @@ import { useAuth } from "../../context/AuthContext";
 import { useLocation, useNavigate } from "react-router";
 import { useState } from "react";
 
-export default function Header() {
+interface HeaderProps {
+  title: string;
+}
+
+export default function Header({ title }: HeaderProps) {
   const [backArrow, setBackArrow] = useState(false);
-  const [title, setTitle] = useState("");
   const { logout, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   console.log(location);
 
-  if (location.pathname === "/song")
-    return (
-      <header className={styles.header}>
-        <div className={styles.icon}>
-          {backArrow ? (
-            <IoArrowBack onClick={() => navigate(-1)} />
-          ) : (
-            <IoMusicalNotes />
-          )}
-        </div>
+  return (
+    <header className={styles.header}>
+      <div className={styles.icon}>
+        {backArrow && <IoArrowBack onClick={() => navigate(-1)} />}
+      </div>
 
-        <div className={styles.headerText}>
-          <h1 className={styles.pageTitle}>Songbook</h1>
-          <p className={styles.title}>{title}</p>
-        </div>
+      <div className={styles.headerText}>
+        <h1 className={styles.pageTitle}>
+          <IoMusicalNotes />
+          Songbook
+        </h1>
+        <p className={styles.title}>{title}</p>
+      </div>
 
-        {user && (
-          <div className={styles.logOut} onClick={logout} title="Déconnexion">
-            <IoPower />
-          </div>
-        )}
-      </header>
-    );
+      {user && (
+        <div className={styles.logOut} onClick={logout} title="Déconnexion">
+          <IoPower />
+        </div>
+      )}
+    </header>
+  );
 }

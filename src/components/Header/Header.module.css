@@ -25,13 +25,16 @@
 }
 
 .title {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 900;
   color: var(--text);
 }
 
 .pageTitle {
   opacity: 0.8;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .logOut {
