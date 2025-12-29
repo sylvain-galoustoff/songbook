@@ -2,14 +2,31 @@ import styles from "./Header.module.css";
 import { IoArrowBack, IoMusicalNotes, IoPower } from "react-icons/io5";
 import { useAuth } from "../../context/AuthContext";
 import { useLocation, useNavigate } from "react-router";
-import { useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 
 interface HeaderProps {
   title: string;
+  backArrow?: boolean;
 }
 
-export default function Header({ title }: HeaderProps) {
-  const [backArrow, setBackArrow] = useState(false);
+const titleVariants = {
+  initial: {
+    opacity: 0,
+  },
+  animate: {
+    opacity: 1,
+  },
+  exit: {
+    opacity: 0,
+  },
+};
+
+const transition = {
+  duration: 0.35,
+  ease: [0.4, 0, 0.2, 1] as const,
+};
+
+export default function Header({ title, backArrow = false }: HeaderProps) {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -27,14 +44,38 @@ export default function Header({ title }: HeaderProps) {
           <IoMusicalNotes />
           Songbook
         </h1>
-        <p className={styles.title}>{title}</p>
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={title}
+            variants={titleVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={transition}
+            className={styles.title}
+          >
+            {title}
+          </motion.p>
+        </AnimatePresence>
       </div>
 
-      {user && (
-        <div className={styles.logOut} onClick={logout} title="Déconnexion">
-          <IoPower />
-        </div>
-      )}
+      <AnimatePresence mode="wait">
+        {user && (
+          <motion.div
+            key="logoutButton"
+            variants={titleVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={transition}
+            className={styles.logOut}
+            onClick={logout}
+            title="Déconnexion"
+          >
+            <IoPower />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
