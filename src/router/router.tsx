@@ -7,6 +7,7 @@ import Signin from "../views/Signin/Signin";
 import AddSong from "../views/AddSong/AddSong";
 import Song from "../views/song/Song";
 import HomeFooter from "../views/Home/HomeFooter";
+import SongFooter from "../views/song/SongFooter";
 
 const router = createBrowserRouter([
   {
@@ -60,6 +61,7 @@ const router = createBrowserRouter([
         handle: {
           title: "Titre",
           backArrow: true,
+          footer: <SongFooter />,
         },
       },
     ],
