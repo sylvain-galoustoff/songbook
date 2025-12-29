@@ -5,6 +5,8 @@ import Home from "../views/Home/Home";
 import Login from "../views/Login/Login";
 import Signin from "../views/Signin/Signin";
 import AddSong from "../views/AddSong/AddSong";
+import Song from "../views/song/Song";
+import HomeFooter from "../views/Home/HomeFooter";
 
 const router = createBrowserRouter([
   {
@@ -17,14 +19,24 @@ const router = createBrowserRouter([
             <Home />
           </PrivateRoute>
         ),
+        handle: {
+          title: "Vos titres",
+          footer: <HomeFooter />,
+        },
       },
       {
         path: "/login",
         element: <Login />,
+        handle: {
+          title: "Connexion",
+        },
       },
       {
         path: "/signin",
         element: <Signin />,
+        handle: {
+          title: "Inscription",
+        },
       },
       {
         path: "/add-song",
@@ -33,6 +45,22 @@ const router = createBrowserRouter([
             <AddSong />
           </PrivateRoute>
         ),
+        handle: {
+          title: "Ajouter un titre",
+          backArrow: true,
+        },
+      },
+      {
+        path: "/song/:id",
+        element: (
+          <PrivateRoute>
+            <Song />
+          </PrivateRoute>
+        ),
+        handle: {
+          title: "Titre",
+          backArrow: true,
+        },
       },
     ],
   },

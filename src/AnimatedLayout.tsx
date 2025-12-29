@@ -1,9 +1,7 @@
-import { Outlet, useLocation } from "react-router";
+import { Outlet, useLocation, useMatches } from "react-router";
 import { useRef, type JSX } from "react";
 import Header from "./components/Header/Header";
-import Footer from "./components/Footer/Footer";
 import { AnimatePresence, motion } from "motion/react";
-import HomeFooter from "./views/Home/HomeFooter";
 
 export const pushVariants = {
   initial: (direction: number) => ({
@@ -18,15 +16,9 @@ export const pushVariants = {
 };
 
 export const footerVariants = {
-  initial: {
-    y: "100%",
-  },
-  animate: {
-    y: "0%",
-  },
-  exit: {
-    y: "100%",
-  },
+  initial: { y: "100%" },
+  animate: { y: "0%" },
+  exit: { y: "100%" },
 };
 
 const pushTransition = {
@@ -34,27 +26,31 @@ const pushTransition = {
   ease: [0.4, 0, 0.2, 1] as const,
 };
 
+type RouteHandle = {
+  title?: string;
+  backArrow?: boolean;
+  footer?: JSX.Element;
+};
+
 export default function AnimatedLayout() {
   const location = useLocation();
-  const previousPath = useRef(location.pathname);
+  const matches = useMatches();
 
+  // ---- Route active (pattern + params déjà résolus)
+  const currentMatch = matches[matches.length - 1];
+  const handle = currentMatch?.handle as RouteHandle | undefined;
+
+  // ---- Direction d’animation (simple et stable)
+  const previousPath = useRef(location.pathname);
   const direction = location.pathname > previousPath.current ? -1 : 1;
   previousPath.current = location.pathname;
 
-  const titles: Record<string, string> = {
-    "/login": "Connexion",
-    "/signin": "Inscription",
-  };
-
-  const withFooterPages: string[] = ["/"];
-
-  const footers: Record<string, JSX.Element> = {
-    "/": <HomeFooter />,
-  };
-
   return (
     <div id="app">
-      <Header title={location.pathname && titles[location.pathname]} />
+      <Header
+        title={handle?.title ?? ""}
+        backArrow={Boolean(handle?.backArrow)}
+      />
 
       <AnimatePresence>
         <motion.div
@@ -65,26 +61,22 @@ export default function AnimatedLayout() {
           animate="animate"
           exit="exit"
           transition={pushTransition}
-          className={`animated-wrapper ${
-            withFooterPages.includes(location.pathname)
-              ? "with-footer"
-              : undefined
-          }`}
+          className={`animated-wrapper ${handle?.footer ? "with-footer" : ""}`}
         >
           <Outlet />
         </motion.div>
       </AnimatePresence>
 
       <AnimatePresence>
-        {withFooterPages.includes(location.pathname) && (
+        {handle?.footer && (
           <motion.footer
-            key={`footer-${location.pathname}`}
+            key={`footer-${currentMatch?.id}`}
             variants={footerVariants}
             initial="initial"
             animate="animate"
             exit="exit"
           >
-            {location.pathname && footers[location.pathname]}
+            {handle.footer}
           </motion.footer>
         )}
       </AnimatePresence>
