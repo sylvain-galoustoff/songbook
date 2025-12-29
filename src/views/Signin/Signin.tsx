@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Header from "../../components/Header/Header";
 import styles from "./Signin.module.css";
 import { IoCheckmarkDone } from "react-icons/io5";
 import { createUserWithEmailAndPassword } from "firebase/auth";
@@ -59,7 +58,6 @@ export default function Signin() {
 
   return (
     <div className={styles.signin} id="signin">
-      <Header title="Inscription" />
       <main className={styles.main}>
         <div className={`toast ${styles.toast}`}>
           <p>

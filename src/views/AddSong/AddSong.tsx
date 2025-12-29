@@ -1,5 +1,4 @@
 import styles from "./AddSong.module.css";
-import Header from "../../components/Header/Header";
 import { IoCheckmarkDone } from "react-icons/io5";
 import { useState } from "react";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -78,8 +77,6 @@ export default function AddSong() {
 
   return (
     <div className={styles.addSong} id="add-song">
-      <Header />
-
       <div className={styles.main}>
         <form className={styles.form} onSubmit={submitSong}>
           <div className={`form-group ${styles.formGroup}`}>

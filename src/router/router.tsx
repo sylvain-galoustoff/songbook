@@ -12,7 +12,7 @@ const router = createBrowserRouter([
     element: <AnimatedLayout />,
     children: [
       {
-        path: "/",
+        index: true,
         element: (
           <PrivateRoute>
             <Home />

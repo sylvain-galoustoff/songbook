@@ -1,5 +1,4 @@
 import { Link, useNavigate } from "react-router";
-import Header from "../../components/Header/Header";
 import styles from "./Login.module.css";
 import { IoCheckmarkDone } from "react-icons/io5";
 import { useState } from "react";
@@ -39,8 +38,6 @@ export default function Login() {
 
   return (
     <div className={styles.login} id="login">
-      <Header title="Connexion" />
-
       <main className={styles.main}>
         <div className={`toast ${styles.toast}`}>
           <p>

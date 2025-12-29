@@ -1,5 +1,4 @@
 import { useParams } from "react-router";
-import Header from "../../components/Header/Header";
 import styles from "./Song.module.css";
 import { useEffect, useState } from "react";
 import {
@@ -135,8 +134,6 @@ export default function Song() {
 
   return (
     <div className={styles.song} id="song">
-      <Header title={song?.title} backArrow />
-
       <main className={styles.main}>
         {loading && <p>Chargement…</p>}
 

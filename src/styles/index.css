@@ -62,12 +62,20 @@ body {
   overflow: hidden;
 }
 
+#app {
+  height: 100%;
+  position: relative;
+  border: 3px solid red;
+  display: flex;
+  flex-direction: column;
+}
+
 .animated-wrapper {
   position: absolute;
-  top: 0;
+  top: 100px;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: calc(100% - 100px);
   inset: 0;
 }
 

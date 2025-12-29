@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router";
-import Header from "../../components/Header/Header";
 import SongLine from "../../components/SongLine/SongLine";
 import styles from "./Home.module.css";
 import { IoAddCircle } from "react-icons/io5";
@@ -45,8 +44,6 @@ export default function Home() {
 
   return (
     <div className={styles.home} id="home">
-      <Header title="Vos chansons" />
-
       {isLoading === false && (
         <main className={styles.main}>
           {songs.length > 0 ? renderSongsLines : <NoSongsFound />}
