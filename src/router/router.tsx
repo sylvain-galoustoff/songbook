@@ -4,6 +4,7 @@ import PrivateRoute from "./PrivateRoute";
 import Home from "../views/Home/Home";
 import Login from "../views/Login/Login";
 import Signin from "../views/Signin/Signin";
+import AddSong from "../views/AddSong/AddSong";
 
 const router = createBrowserRouter([
   {
@@ -24,6 +25,14 @@ const router = createBrowserRouter([
       {
         path: "/signin",
         element: <Signin />,
+      },
+      {
+        path: "/add-song",
+        element: (
+          <PrivateRoute>
+            <AddSong />
+          </PrivateRoute>
+        ),
       },
     ],
   },

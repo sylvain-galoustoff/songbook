@@ -1,0 +1,38 @@
+.addSong {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background);
+}
+
+.main {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding-top: 32px;
+}
+
+.formGroup {
+  padding: 0 32px;
+}
+
+.fileInfo {
+  font-style: italic;
+  font-size: 0.8rem;
+}
+
+.footer {
+  margin-top: auto;
+}
+
+.footer button {
+  width: 100%;
+}

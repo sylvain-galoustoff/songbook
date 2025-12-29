@@ -76,9 +76,8 @@ body {
   left: 0;
   width: 100%;
   height: calc(100% - 100px);
-  border: 2px solid red;
-  /* border-left: 1px solid var(--primary);
-  border-right: 1px solid var(--primary); */
+  border-left: 1px solid var(--primary);
+  border-right: 1px solid var(--primary);
 }
 .animated-wrapper.with-footer {
   height: calc(100% - 200px);
@@ -95,6 +94,13 @@ footer {
   border-top: 1px solid var(--border);
   display: flex;
   background-color: var(--foreground);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
 }
 
 a {
