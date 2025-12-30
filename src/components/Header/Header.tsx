@@ -3,6 +3,7 @@ import { IoArrowBack, IoMusicalNotes, IoPower } from "react-icons/io5";
 import { useAuth } from "../../context/AuthContext";
 import { useLocation, useNavigate } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
+import { useAudio } from "../../context/AudioContext";
 
 interface HeaderProps {
   title: string;
@@ -30,13 +31,19 @@ export default function Header({ title, backArrow = false }: HeaderProps) {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { trackTitle, resetAudio } = useAudio();
 
   console.log(location);
+
+  const goPreviousPage = () => {
+    resetAudio();
+    navigate(-1);
+  };
 
   return (
     <header className={styles.header}>
       <div className={styles.icon}>
-        {backArrow && <IoArrowBack onClick={() => navigate(-1)} />}
+        {backArrow && <IoArrowBack onClick={goPreviousPage} />}
       </div>
 
       <div className={styles.headerText}>
@@ -54,7 +61,7 @@ export default function Header({ title, backArrow = false }: HeaderProps) {
             transition={transition}
             className={styles.title}
           >
-            {title}
+            {location.pathname.includes("/song/") ? trackTitle : title}
           </motion.p>
         </AnimatePresence>
       </div>

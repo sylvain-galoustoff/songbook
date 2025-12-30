@@ -16,6 +16,9 @@ interface AudioContextType {
   playAudio: (audioPath: string, version: VersionInfo) => void;
   togglePlay: () => void;
   seekTo: (timecode: number) => void;
+  trackTitle: string;
+  setTrackTitle: (title: string) => void;
+  resetAudio: () => void;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -28,7 +31,20 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     null
   );
   const [versionId, setVersionId] = useState<string | undefined>(undefined);
+  const [trackTitle, setTrackTitle] = useState("");
   const [isPlaying, setIsPlaying] = useState(false);
+
+  const resetAudio = () => {
+    if (currentAudio) {
+      currentAudio.pause();
+    }
+    setCurrentAudio(null);
+    setCurrentVersion(null);
+    setVersionId(undefined);
+    setIsPlaying(false);
+    setTrackTitle("");
+    audioCache.clear(); // si tu veux aussi vider le cache
+  };
 
   // Cache pour stocker les URLs des fichiers déjà téléchargés
   const audioCache = useState<Map<string, string>>(() => new Map())[0];
@@ -96,6 +112,9 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         playAudio,
         togglePlay,
         seekTo,
+        trackTitle,
+        setTrackTitle,
+        resetAudio,
       }}
     >
       {children}
