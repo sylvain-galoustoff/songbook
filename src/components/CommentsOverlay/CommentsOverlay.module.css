@@ -10,6 +10,7 @@
   flex-direction: column;
   gap: 16px;
   padding: 32px 32px 8px 32px;
+  transform: translateY(100%);
 }
 
 .commentsToast {

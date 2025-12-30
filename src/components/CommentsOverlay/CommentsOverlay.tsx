@@ -9,6 +9,8 @@ import { db } from "../../firebase";
 import { useParams } from "react-router";
 import { useCommentsForVersion } from "../../hooks/useCommentsForVersion";
 import ChatBubble from "../ChatBubble/ChatBubble";
+import { motion } from "motion/react";
+import { useComments } from "../../context/CommentsContext";
 
 interface CommentsOverlayProps {
   timecode: number;
@@ -64,7 +66,13 @@ export default function CommentsOverlay({
   };
 
   return (
-    <div className={styles.commentsOverlay}>
+    <motion.div
+      initial={{ y: "100%" }}
+      animate={{ y: "0%" }}
+      exit={{ y: "100%" }}
+      transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] as const }}
+      className={styles.commentsOverlay}
+    >
       <header className={`toast ${styles.commentsToast}`}>
         <h2>Commentaires à {formatMinutesSeconds(timecode)}</h2>
         <IoCloseCircle className={styles.closeButton} onClick={closeOverlay} />
@@ -90,6 +98,6 @@ export default function CommentsOverlay({
           </div>
         </form>
       </div>
-    </div>
+    </motion.div>
   );
 }

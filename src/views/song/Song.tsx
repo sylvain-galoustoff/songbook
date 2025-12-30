@@ -18,14 +18,13 @@ import { useParams } from "react-router";
 import { useAudio } from "../../context/AudioContext";
 import { db } from "../../firebase";
 import { fetchCommentTimecodes } from "../../utils/fetchCommentTimecodes";
+import { useComments } from "../../context/CommentsContext";
+import { AnimatePresence } from "motion/react";
 
 export default function Song() {
   const [song, setSong] = useState<SongType | undefined>();
   const [versions, setVersions] = useState<VersionType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [commentsTime, setCommentsTime] = useState<number | undefined>(
-    undefined
-  );
   const [commentMarkers, setCommentMarkers] = useState<number[]>([]);
   const [markerActive, setMarkerActive] = useState<number | undefined>(
     undefined
@@ -33,6 +32,7 @@ export default function Song() {
 
   const { id } = useParams<{ id: string }>();
   const { versionId, seekTo, setTrackTitle } = useAudio();
+  const { commentsTime, setCommentsTime } = useComments();
 
   const showMarkerComments = (index: number, timecode: number) => {
     setMarkerActive(index);
@@ -128,7 +128,7 @@ export default function Song() {
         {loading && <p>Chargement…</p>}
 
         {!loading && song && (
-          <>
+          <div className={styles.versionsWrapper}>
             <div className={styles.version}>
               <div className={styles.header}>
                 <h2>Pistes audio</h2>
@@ -136,15 +136,18 @@ export default function Song() {
               </div>
               <div className={styles.versionsList}>{renderVersions}</div>
             </div>
-          </>
+          </div>
         )}
 
-        {commentsTime !== undefined && (
-          <CommentsOverlay
-            timecode={commentsTime}
-            closeOverlay={() => setCommentsTime(undefined)}
-          />
-        )}
+        <AnimatePresence>
+          {commentsTime !== undefined && (
+            <CommentsOverlay
+              key={commentsTime}
+              timecode={commentsTime}
+              closeOverlay={() => setCommentsTime(undefined)}
+            />
+          )}
+        </AnimatePresence>
       </main>
 
       <div className={styles.commentsMarkers}>{renderMarker}</div>
