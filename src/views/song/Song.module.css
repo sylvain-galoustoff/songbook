@@ -46,9 +46,9 @@
 .commentsMarkers {
   margin-top: auto;
   display: flex;
-  gap: 16px;
+  gap: 8px;
   padding: 0 32px;
   flex-wrap: nowrap;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding-bottom: 8px;
 }

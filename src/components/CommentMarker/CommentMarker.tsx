@@ -20,13 +20,9 @@ export default function CommentMarker({
       className={`${styles.marker} ${isActive ? styles.active : undefined}`}
       onClick={() => setMarkerActive(index, timecode)}
     >
-      {isActive ? (
-        <IoChatbox className={styles.icon} />
-      ) : (
-        <IoChatboxOutline className={styles.icon} />
-      )}
       <p className={styles.text}>
-        <span className={styles.value}>{formatMinutesSeconds(timecode)}</span>
+        <IoChatbox />
+        {formatMinutesSeconds(timecode)}
       </p>
     </div>
   );
