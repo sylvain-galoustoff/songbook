@@ -12,7 +12,7 @@ import {
   query,
   collection,
   orderBy,
-  getDocs,
+  onSnapshot,
 } from "firebase/firestore";
 import { useParams } from "react-router";
 import { useAudio } from "../../context/AudioContext";
@@ -20,6 +20,7 @@ import { db } from "../../firebase";
 import { fetchCommentTimecodes } from "../../utils/fetchCommentTimecodes";
 import { useComments } from "../../context/CommentsContext";
 import { AnimatePresence } from "motion/react";
+import AddVersionModal from "./AddVersionModal";
 
 export default function Song() {
   const [song, setSong] = useState<SongType | undefined>();
@@ -29,6 +30,7 @@ export default function Song() {
   const [markerActive, setMarkerActive] = useState<number | undefined>(
     undefined
   );
+  const [showAddSongModal, setShowAddSongModal] = useState(false);
 
   const { id } = useParams<{ id: string }>();
   const { versionId, seekTo, setTrackTitle } = useAudio();
@@ -43,10 +45,12 @@ export default function Song() {
   useEffect(() => {
     if (!id) return;
 
-    const fetchSongAndVersions = async () => {
+    let unsubscribeVersions: () => void;
+
+    const fetchSongAndListenVersions = async () => {
       try {
         /**
-         * 1. Chargement de la chanson
+         * 1. Chargement de la chanson (one-shot)
          */
         const songRef = doc(db, "songs", id);
         const songSnap = await getDoc(songRef);
@@ -60,35 +64,43 @@ export default function Song() {
           id: songSnap.id,
           ...(songSnap.data() as Omit<SongType, "id">),
         });
+
         setTrackTitle(songSnap.data().title);
 
         /**
-         * 2. Chargement des versions
+         * 2. Écoute temps réel des versions
          */
         const versionsQuery = query(
           collection(db, "songs", id, "versions"),
           orderBy("version", "desc")
         );
 
-        const versionsSnap = await getDocs(versionsQuery);
+        unsubscribeVersions = onSnapshot(versionsQuery, (snapshot) => {
+          const versionsData: VersionType[] = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...(doc.data() as Omit<VersionType, "id">),
+          }));
 
-        const versionsData: VersionType[] = versionsSnap.docs.map((doc) => ({
-          id: doc.id,
-          ...(doc.data() as Omit<VersionType, "id">),
-        }));
-
-        setVersions(versionsData);
+          setVersions(versionsData);
+          setLoading(false);
+        });
       } catch (error) {
         console.error(
           "Erreur lors du chargement de la chanson ou des versions :",
           error
         );
-      } finally {
         setLoading(false);
       }
     };
 
-    fetchSongAndVersions();
+    fetchSongAndListenVersions();
+
+    /**
+     * Cleanup obligatoire
+     */
+    return () => {
+      if (unsubscribeVersions) unsubscribeVersions();
+    };
   }, [id]);
 
   useEffect(() => {
@@ -132,7 +144,10 @@ export default function Song() {
             <div className={styles.version}>
               <div className={styles.header}>
                 <h2>Pistes audio</h2>
-                <IoAddCircle className={styles.addIcon} />
+                <IoAddCircle
+                  className={styles.addIcon}
+                  onClick={() => setShowAddSongModal(true)}
+                />
               </div>
               <div className={styles.versionsList}>{renderVersions}</div>
             </div>
@@ -151,6 +166,12 @@ export default function Song() {
       </main>
 
       <div className={styles.commentsMarkers}>{renderMarker}</div>
+
+      <AnimatePresence>
+        {showAddSongModal && (
+          <AddVersionModal closeModal={() => setShowAddSongModal(false)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
