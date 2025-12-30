@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useLocation, useNavigate } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { useAudio } from "../../context/AudioContext";
+import { useComments } from "../../context/CommentsContext";
 
 interface HeaderProps {
   title: string;
@@ -32,11 +33,13 @@ export default function Header({ title, backArrow = false }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { trackTitle, resetAudio } = useAudio();
+  const { setCommentsTime } = useComments();
 
   console.log(location);
 
   const goPreviousPage = () => {
     resetAudio();
+    setCommentsTime(undefined);
     navigate(-1);
   };
 
