@@ -82,7 +82,7 @@ export default function Header({ title, backArrow = false }: HeaderProps) {
             onClick={logout}
             title="Déconnexion"
           >
-            <IoPower />
+            <IoPower className={styles.logoutButton} />
           </motion.div>
         )}
       </AnimatePresence>
