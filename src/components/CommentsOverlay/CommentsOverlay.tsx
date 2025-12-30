@@ -10,7 +10,6 @@ import { useParams } from "react-router";
 import { useCommentsForVersion } from "../../hooks/useCommentsForVersion";
 import ChatBubble from "../ChatBubble/ChatBubble";
 import { motion } from "motion/react";
-import { useComments } from "../../context/CommentsContext";
 
 interface CommentsOverlayProps {
   timecode: number;
