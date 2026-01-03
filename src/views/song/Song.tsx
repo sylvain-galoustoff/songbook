@@ -21,6 +21,7 @@ import { fetchCommentTimecodes } from "../../utils/fetchCommentTimecodes";
 import { useComments } from "../../context/CommentsContext";
 import { AnimatePresence } from "motion/react";
 import AddVersionModal from "./AddVersionModal";
+import DeleteVersionModal from "./DeleteVersionModal";
 
 export default function Song() {
   const [song, setSong] = useState<SongType | undefined>();
@@ -31,6 +32,7 @@ export default function Song() {
     undefined
   );
   const [showAddSongModal, setShowAddSongModal] = useState(false);
+  const [deleteVersionId, setDeleteVersionId] = useState("");
 
   const { id } = useParams<{ id: string }>();
   const { versionId, seekTo, setTrackTitle } = useAudio();
@@ -121,6 +123,7 @@ export default function Song() {
       versionNumber={version.version}
       date={version.createdAt}
       fileUrl={version.fileUrl}
+      deleteVersionId={(id) => setDeleteVersionId(id)}
     />
   ));
 
@@ -170,6 +173,15 @@ export default function Song() {
       <AnimatePresence>
         {showAddSongModal && (
           <AddVersionModal closeModal={() => setShowAddSongModal(false)} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {deleteVersionId.length > 0 && (
+          <DeleteVersionModal
+            closeModal={() => setDeleteVersionId("")}
+            deleteId={deleteVersionId}
+          />
         )}
       </AnimatePresence>
     </div>

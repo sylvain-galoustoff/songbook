@@ -3,11 +3,11 @@ import { useState, useEffect } from "react";
 import NoSongsFound from "../../components/NoSongsFound/NoSongsFound";
 import SongLine from "../../components/SongLine/SongLine";
 import { db } from "../../firebase";
-import type { Song } from "../../types/Songs";
+import type { SongType } from "../../types/Songs";
 import styles from "./Home.module.css";
 
 export default function Home() {
-  const [songs, setSongs] = useState<Song[]>([]);
+  const [songs, setSongs] = useState<SongType[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const renderSongsLines = songs.map((song) => (
@@ -23,9 +23,9 @@ export default function Home() {
 
         const snapshot = await getDocs(q);
 
-        const songsData: Song[] = snapshot.docs.map((doc) => ({
+        const songsData: SongType[] = snapshot.docs.map((doc) => ({
           id: doc.id,
-          ...(doc.data() as Omit<Song, "id">),
+          ...(doc.data() as Omit<SongType, "id">),
         }));
 
         setSongs(songsData);

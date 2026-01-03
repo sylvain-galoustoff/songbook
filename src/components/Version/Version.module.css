@@ -2,7 +2,6 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  cursor: pointer;
 }
 
 .playIcon {
@@ -19,9 +18,19 @@
 
 .versionNumber {
   font-weight: bold;
+  cursor: pointer;
 }
 
 .date {
   margin-left: auto;
   opacity: 0.8;
+}
+
+.moreButton {
+  cursor: pointer;
+  transition: all 0.15s ease-out;
+}
+
+.moreButton:hover {
+  color: var(--secondary);
 }
