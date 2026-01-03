@@ -62,9 +62,9 @@
 }
 
 .thumb.dislikeActive {
-  color: red;
+  color: var(--danger);
 }
 
 .thumb.likeActive {
-  color: green;
+  color: var(--success);
 }
