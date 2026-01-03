@@ -2,6 +2,10 @@ import { Outlet, useLocation, useMatches } from "react-router";
 import { useRef, type JSX } from "react";
 import Header from "./components/Header/Header";
 import { AnimatePresence, motion } from "motion/react";
+import { AudioProvider } from "./context/AudioContext";
+import { AuthProvider } from "./context/AuthContext";
+import { CommentsProvider } from "./context/CommentsContext";
+// import { PWAInstallProvider } from "./context/PWAInstallContext";
 
 export const pushVariants = {
   initial: (direction: number) => ({
@@ -46,40 +50,50 @@ export default function AnimatedLayout() {
   previousPath.current = location.pathname;
 
   return (
-    <div id="app">
-      <Header
-        title={handle?.title ?? ""}
-        backArrow={Boolean(handle?.backArrow)}
-      />
+    // <PWAInstallProvider>
+    <AuthProvider>
+      <AudioProvider>
+        <CommentsProvider>
+          <div id="app">
+            <Header
+              title={handle?.title ?? ""}
+              backArrow={Boolean(handle?.backArrow)}
+            />
 
-      <AnimatePresence>
-        <motion.div
-          key={location.pathname}
-          custom={direction}
-          variants={pushVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          transition={pushTransition}
-          className={`animated-wrapper ${handle?.footer ? "with-footer" : ""}`}
-        >
-          <Outlet />
-        </motion.div>
-      </AnimatePresence>
+            <AnimatePresence>
+              <motion.div
+                key={location.pathname}
+                custom={direction}
+                variants={pushVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={pushTransition}
+                className={`animated-wrapper ${
+                  handle?.footer ? "with-footer" : ""
+                }`}
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
 
-      <AnimatePresence>
-        {handle?.footer && (
-          <motion.footer
-            key={`footer-${currentMatch?.id}`}
-            variants={footerVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-          >
-            {handle.footer}
-          </motion.footer>
-        )}
-      </AnimatePresence>
-    </div>
+            <AnimatePresence>
+              {handle?.footer && (
+                <motion.footer
+                  key={`footer-${currentMatch?.id}`}
+                  variants={footerVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                >
+                  {handle.footer}
+                </motion.footer>
+              )}
+            </AnimatePresence>
+          </div>
+        </CommentsProvider>
+      </AudioProvider>
+    </AuthProvider>
+    // </PWAInstallProvider>
   );
 }
