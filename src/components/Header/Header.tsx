@@ -35,8 +35,6 @@ export default function Header({ title, backArrow = false }: HeaderProps) {
   const { trackTitle, resetAudio } = useAudio();
   const { setCommentsTime } = useComments();
 
-  console.log(location);
-
   const goPreviousPage = () => {
     resetAudio();
     setCommentsTime(undefined);
