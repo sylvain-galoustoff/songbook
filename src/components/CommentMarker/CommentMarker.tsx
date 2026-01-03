@@ -1,6 +1,6 @@
 import { formatMinutesSeconds } from "../../utils/formatTime";
 import styles from "./CommentMarker.module.css";
-import { IoChatbox, IoChatboxOutline } from "react-icons/io5";
+import { IoChatbox } from "react-icons/io5";
 
 interface CommentMarkerProps {
   timecode: number;
