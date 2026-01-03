@@ -8,6 +8,7 @@ import AddSong from "../views/AddSong/AddSong";
 import Song from "../views/song/Song";
 import HomeFooter from "../views/Home/HomeFooter";
 import SongFooter from "../views/song/SongFooter";
+import InstallApp from "../views/InstallApp/InstallApp";
 
 const router = createBrowserRouter([
   {
@@ -62,6 +63,13 @@ const router = createBrowserRouter([
           title: "Titre",
           backArrow: true,
           footer: <SongFooter />,
+        },
+      },
+      {
+        path: "/install",
+        element: <InstallApp />,
+        handle: {
+          title: "Installer Songbook",
         },
       },
     ],
