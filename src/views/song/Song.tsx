@@ -17,7 +17,6 @@ import {
 import { useParams } from "react-router";
 import { useAudio } from "../../context/AudioContext";
 import { db } from "../../firebase";
-import { fetchCommentTimecodes } from "../../utils/fetchCommentTimecodes";
 import { useComments } from "../../context/CommentsContext";
 import { AnimatePresence } from "motion/react";
 import AddVersionModal from "./AddVersionModal";
@@ -106,15 +105,30 @@ export default function Song() {
   }, [id]);
 
   useEffect(() => {
-    if (!id || versionId === undefined) return;
+    if (!id || !versionId) return;
 
-    const loadMarkers = async () => {
-      const timecodes = await fetchCommentTimecodes(id, versionId);
-      setCommentMarkers(timecodes);
-    };
+    const commentsRef = collection(
+      db,
+      "songs",
+      id,
+      "versions",
+      versionId,
+      "comments"
+    );
 
-    loadMarkers();
-  }, [id, versions, versionId]);
+    const unsubscribe = onSnapshot(commentsRef, (snapshot) => {
+      const timecodes = snapshot.docs
+        .map((doc) => doc.data().timecode)
+        .filter((t): t is number => typeof t === "number");
+
+      // Supprime les doublons + tri
+      const uniqueSorted = Array.from(new Set(timecodes)).sort((a, b) => a - b);
+
+      setCommentMarkers(uniqueSorted);
+    });
+
+    return () => unsubscribe();
+  }, [id, versionId]);
 
   const renderVersions = versions.map((version) => (
     <Version
