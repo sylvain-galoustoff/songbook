@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
       manifest: {
-        name: "Band Rehearsal Archive",
-        short_name: "Rehearsals",
+        name: "Songbook",
+        short_name: "Songbook",
         description: "Archive et annotations des répétitions du groupe",
         theme_color: "#111827",
         background_color: "#111827",
