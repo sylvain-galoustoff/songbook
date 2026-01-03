@@ -179,6 +179,18 @@ button.secondary,
   color: var(--white);
 }
 
+button.danger,
+.button.danger {
+  background-color: var(--danger);
+  color: var(--white);
+}
+
+button.success,
+.button.success {
+  background-color: var(--success);
+  color: var(--white);
+}
+
 /* TOAST */
 .toast {
   background-color: var(--foreground);
