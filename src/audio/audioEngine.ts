@@ -15,6 +15,11 @@ export interface TrackSource {
   url: string;
 }
 
+export interface LoopRange {
+  start: number | null;
+  end: number | null;
+}
+
 // Moteur audio : un seul AudioContext + un seul AudioWorkletNode qui mixe
 // toutes les pistes. Voir .claude/rules/audio-engine.md.
 export class AudioEngine {
@@ -23,6 +28,7 @@ export class AudioEngine {
   private readonly workletReady: Promise<void>;
   private durationSamples = 0;
   private onPosition: ((index: number) => void) | null = null;
+  private onLoopChange: ((loop: LoopRange) => void) | null = null;
 
   constructor() {
     this.context = new AudioContext({ sampleRate: SAMPLE_RATE });
@@ -39,8 +45,11 @@ export class AudioEngine {
     this.workletNode.port.onmessage = (
       event: MessageEvent<WorkletToMainMessage>,
     ) => {
-      if (event.data.type === "position") {
-        this.onPosition?.(event.data.index);
+      const data = event.data;
+      if (data.type === "position") {
+        this.onPosition?.(data.index);
+      } else if (data.type === "loop") {
+        this.onLoopChange?.({ start: data.start, end: data.end });
       }
     };
     this.workletNode.connect(this.context.destination);
@@ -48,6 +57,10 @@ export class AudioEngine {
 
   setPositionListener(listener: ((index: number) => void) | null): void {
     this.onPosition = listener;
+  }
+
+  setLoopListener(listener: ((loop: LoopRange) => void) | null): void {
+    this.onLoopChange = listener;
   }
 
   getDurationSamples(): number {
@@ -100,6 +113,10 @@ export class AudioEngine {
 
   seek(index: number): void {
     this.postMessage({ type: "seek", index });
+  }
+
+  toggleLoopPoint(): void {
+    this.postMessage({ type: "toggleLoopPoint" });
   }
 
   dispose(): void {

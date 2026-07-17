@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AudioEngine, type TrackSource } from "../audio/audioEngine";
+import { AudioEngine, type LoopRange, type TrackSource } from "../audio/audioEngine";
 
 const TRACK_SOURCES: TrackSource[] = [
   { id: "guitar", url: "/guitar.mp3" },
@@ -17,6 +17,7 @@ export function useAudioEngine() {
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
+  const [loop, setLoop] = useState<LoopRange>({ start: null, end: null });
 
   useEffect(() => {
     // Garde anti-StrictMode : ignore la résolution d'un engine déjà nettoyé
@@ -25,6 +26,7 @@ export function useAudioEngine() {
     const engine = new AudioEngine();
     engineRef.current = engine;
     engine.setPositionListener((index) => setPosition(index));
+    engine.setLoopListener((range) => setLoop(range));
 
     engine
       .loadTracks(TRACK_SOURCES)
@@ -41,6 +43,7 @@ export function useAudioEngine() {
     return () => {
       cancelled = true;
       engine.setPositionListener(null);
+      engine.setLoopListener(null);
       engine.dispose();
     };
   }, []);
@@ -80,6 +83,14 @@ export function useAudioEngine() {
 
   const commitSeek = () => setIsSeeking(false);
 
+  // Pas de mise à jour optimiste ici : le worklet est seul juge de l'état de
+  // boucle (ex. une pression sur B peut être invalidée et renvoyer A seul).
+  const toggleLoop = () => {
+    const engine = engineRef.current;
+    if (!engine || status !== "ready") return;
+    engine.toggleLoopPoint();
+  };
+
   return {
     status,
     isPlaying,
@@ -92,5 +103,7 @@ export function useAudioEngine() {
     isSeeking,
     seek,
     commitSeek,
+    loop,
+    toggleLoop,
   };
 }

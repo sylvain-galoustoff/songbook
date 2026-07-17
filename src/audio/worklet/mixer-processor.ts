@@ -44,6 +44,8 @@ class MixerProcessor extends AudioWorkletProcessor {
   private masterIndex = 0;
   private playing = false;
   private lastReportedIndex = 0;
+  private loopStart: number | null = null;
+  private loopEnd: number | null = null;
 
   constructor() {
     super();
@@ -59,6 +61,8 @@ class MixerProcessor extends AudioWorkletProcessor {
         this.masterIndex = 0;
         this.lastReportedIndex = 0;
         this.playing = false;
+        this.loopStart = null;
+        this.loopEnd = null;
         break;
       case "play":
         this.playing = true;
@@ -72,6 +76,9 @@ class MixerProcessor extends AudioWorkletProcessor {
       case "seek":
         this.seek(message.index);
         break;
+      case "toggleLoopPoint":
+        this.toggleLoopPoint();
+        break;
     }
   }
 
@@ -81,7 +88,55 @@ class MixerProcessor extends AudioWorkletProcessor {
     if (this.tracks.length === 0) return;
     const trackLength = Math.max(...this.tracks.map((track) => track.length));
     this.masterIndex = Math.max(0, Math.min(targetIndex, trackLength - 1));
+
+    // Un seek en dehors d'une boucle active efface A/B et sort du mode boucle.
+    if (
+      this.loopStart !== null &&
+      this.loopEnd !== null &&
+      (this.masterIndex < this.loopStart || this.masterIndex > this.loopEnd)
+    ) {
+      this.loopStart = null;
+      this.loopEnd = null;
+      this.notifyLoopChange();
+    }
+
     this.reportPosition();
+  }
+
+  // Un seul bouton, 3 pressions : rien → A, A → B (boucle active), A+B → rien.
+  private toggleLoopPoint(): void {
+    if (this.loopStart === null) {
+      this.loopStart = this.masterIndex;
+      this.notifyLoopChange();
+      return;
+    }
+
+    if (this.loopEnd === null) {
+      if (this.masterIndex <= this.loopStart) {
+        // B tomberait derrière (ou sur) la tête de lecture : la boucle serait
+        // invalide. On revient immédiatement à A (un seek) sans changer les
+        // points : l'utilisateur re-pose B depuis là.
+        this.masterIndex = this.loopStart;
+        this.reportPosition();
+        return;
+      }
+      this.loopEnd = this.masterIndex;
+      this.notifyLoopChange();
+      return;
+    }
+
+    this.loopStart = null;
+    this.loopEnd = null;
+    this.notifyLoopChange();
+  }
+
+  private notifyLoopChange(): void {
+    const message: WorkletToMainMessage = {
+      type: "loop",
+      start: this.loopStart,
+      end: this.loopEnd,
+    };
+    this.port.postMessage(message);
   }
 
   private reportPosition(): void {
@@ -124,11 +179,17 @@ class MixerProcessor extends AudioWorkletProcessor {
     }
 
     const trackLength = Math.max(...this.tracks.map((track) => track.length));
-    const remaining = trackLength - this.masterIndex;
-    const framesToRender = Math.max(0, Math.min(blockSize, remaining));
+    let frame = 0;
 
-    for (let frame = 0; frame < framesToRender; frame++) {
-      const sampleIndex = this.masterIndex + frame;
+    // Boucle par échantillon (pas par bloc) : un raccord de boucle A→B doit
+    // pouvoir se produire au milieu d'un bloc de rendu, de façon sample-exact.
+    for (; frame < blockSize; frame++) {
+      if (this.masterIndex >= trackLength) {
+        // Fin de piste atteinte : on arrête (pas de bouclage automatique de
+        // fin de piste en v1 du POC, seule la boucle A→B explicite boucle).
+        this.playing = false;
+        break;
+      }
 
       for (const track of this.tracks) {
         if (track.rampSamplesRemaining > 0) {
@@ -138,6 +199,7 @@ class MixerProcessor extends AudioWorkletProcessor {
         }
       }
 
+      const sampleIndex = this.masterIndex;
       for (let channel = 0; channel < output.length; channel++) {
         let sum = 0;
         for (const track of this.tracks) {
@@ -148,18 +210,23 @@ class MixerProcessor extends AudioWorkletProcessor {
         }
         output[channel][frame] = sum;
       }
-    }
 
-    for (let frame = framesToRender; frame < blockSize; frame++) {
-      for (let channel = 0; channel < output.length; channel++) {
-        output[channel][frame] = 0;
+      this.masterIndex++;
+      if (
+        this.loopStart !== null &&
+        this.loopEnd !== null &&
+        this.masterIndex >= this.loopEnd
+      ) {
+        this.masterIndex = this.loopStart;
+        // Reset visuel immédiat de la position affichée au raccord.
+        this.reportPosition();
       }
     }
 
-    this.masterIndex += framesToRender;
-    if (framesToRender < blockSize) {
-      // Fin de piste atteinte : on arrête (pas de bouclage en v1 du POC).
-      this.playing = false;
+    for (; frame < blockSize; frame++) {
+      for (let channel = 0; channel < output.length; channel++) {
+        output[channel][frame] = 0;
+      }
     }
 
     const reportIntervalSamples = sampleRate * POSITION_REPORT_INTERVAL_SECONDS;

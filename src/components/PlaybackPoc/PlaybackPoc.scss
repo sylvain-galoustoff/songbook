@@ -43,6 +43,18 @@
     }
   }
 
+  .loop-button {
+    font-size: 14px;
+    padding: 8px 16px;
+    background: #e4d9fb;
+    color: #1f1329;
+
+    &.active {
+      background: #863bff;
+      color: #fff;
+    }
+  }
+
   .track-mutes {
     display: flex;
     gap: 12px;

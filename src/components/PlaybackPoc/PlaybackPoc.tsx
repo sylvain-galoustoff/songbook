@@ -32,10 +32,16 @@ export function PlaybackPoc() {
     duration,
     seek,
     commitSeek,
+    loop,
+    toggleLoop,
   } = useAudioEngine();
 
   const playLabel =
     status === "ready" ? (isPlaying ? "Pause" : "Lecture") : LABELS[status];
+
+  const loopLabel =
+    loop.start === null ? "Boucle A" : loop.end === null ? "Boucle B" : "Boucle ⏹";
+  const loopActive = loop.start !== null && loop.end !== null;
 
   return (
     <div className="playback-poc">
@@ -56,6 +62,15 @@ export function PlaybackPoc() {
         />
         <span>{formatTime(duration)}</span>
       </div>
+
+      <button
+        type="button"
+        className={`loop-button${loopActive ? " active" : ""}`}
+        onClick={toggleLoop}
+        disabled={status !== "ready"}
+      >
+        {loopLabel}
+      </button>
 
       <div className="track-mutes">
         {tracks.map((track) => (
