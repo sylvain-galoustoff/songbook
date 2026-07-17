@@ -1,7 +1,8 @@
 import "./App.scss";
+import { PlaybackPoc } from "./components/PlaybackPoc/PlaybackPoc";
 
 function App() {
-  return <div>APP</div>;
+  return <PlaybackPoc />;
 }
 
 export default App;
