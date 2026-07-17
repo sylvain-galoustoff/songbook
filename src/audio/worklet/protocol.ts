@@ -10,4 +10,10 @@ export interface TrackPayload {
 export type MainToWorkletMessage =
   | { type: "loadTracks"; tracks: TrackPayload[] }
   | { type: "play" }
-  | { type: "pause" };
+  | { type: "pause" }
+  | { type: "setTrackGain"; id: string; gain: number }
+  | { type: "seek"; index: number };
+
+// La position affichée par l'UI vient exclusivement de ce message : le
+// thread principal ne calcule jamais la position lui-même.
+export type WorkletToMainMessage = { type: "position"; index: number };

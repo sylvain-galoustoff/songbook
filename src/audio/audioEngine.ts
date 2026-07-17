@@ -1,8 +1,14 @@
-import type { MainToWorkletMessage, TrackPayload } from "./worklet/protocol";
+import type {
+  MainToWorkletMessage,
+  TrackPayload,
+  WorkletToMainMessage,
+} from "./worklet/protocol";
 // "?worker&url" force Vite à transpiler ce module et à l'émettre comme
 // fichier séparé (pas de la même façon qu'un asset générique) : nécessaire
 // pour que le worklet reçoive du JS valide, pas la source TS brute inlinée.
 import mixerProcessorUrl from "./worklet/mixer-processor.ts?worker&url";
+
+export const SAMPLE_RATE = 44100;
 
 export interface TrackSource {
   id: string;
@@ -15,9 +21,11 @@ export class AudioEngine {
   private readonly context: AudioContext;
   private workletNode: AudioWorkletNode | null = null;
   private readonly workletReady: Promise<void>;
+  private durationSamples = 0;
+  private onPosition: ((index: number) => void) | null = null;
 
   constructor() {
-    this.context = new AudioContext({ sampleRate: 44100 });
+    this.context = new AudioContext({ sampleRate: SAMPLE_RATE });
     this.workletReady = this.setupWorklet();
   }
 
@@ -28,7 +36,22 @@ export class AudioEngine {
       numberOfOutputs: 1,
       outputChannelCount: [2],
     });
+    this.workletNode.port.onmessage = (
+      event: MessageEvent<WorkletToMainMessage>,
+    ) => {
+      if (event.data.type === "position") {
+        this.onPosition?.(event.data.index);
+      }
+    };
     this.workletNode.connect(this.context.destination);
+  }
+
+  setPositionListener(listener: ((index: number) => void) | null): void {
+    this.onPosition = listener;
+  }
+
+  getDurationSamples(): number {
+    return this.durationSamples;
   }
 
   async loadTracks(sources: TrackSource[]): Promise<void> {
@@ -57,6 +80,7 @@ export class AudioEngine {
       tracks.push({ id: sources[i].id, channels, length: audioBuffer.length });
     }
 
+    this.durationSamples = Math.max(...tracks.map((track) => track.length));
     this.postMessage({ type: "loadTracks", tracks }, transferables);
   }
 
@@ -68,6 +92,14 @@ export class AudioEngine {
 
   pause(): void {
     this.postMessage({ type: "pause" });
+  }
+
+  setTrackMuted(id: string, muted: boolean): void {
+    this.postMessage({ type: "setTrackGain", id, gain: muted ? 0 : 1 });
+  }
+
+  seek(index: number): void {
+    this.postMessage({ type: "seek", index });
   }
 
   dispose(): void {
