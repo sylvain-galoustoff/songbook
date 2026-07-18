@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { AudioEngine, type LoopRange, type TrackSource } from "../audio/audioEngine";
 
 const TRACK_SOURCES: TrackSource[] = [
-  { id: "guitar", url: "/guitar.mp3" },
-  { id: "basse", url: "/basse.mp3" },
-  { id: "batterie", url: "/batterie.mp3" },
+  { id: "Batterie", url: "/Batterie.flac" },
+  { id: "Chant1", url: "/Chant1.flac" },
+  { id: "Clavier", url: "/Clavier.flac" },
+  { id: "Guitare", url: "/Guitare.flac" },
 ];
 
 export type PlaybackStatus = "loading" | "ready" | "error";

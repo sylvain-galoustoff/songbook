@@ -7,12 +7,6 @@ const LABELS = {
   error: "Erreur de chargement",
 } as const;
 
-const TRACK_LABELS: Record<string, string> = {
-  guitar: "Guitare",
-  basse: "Basse",
-  batterie: "Batterie",
-};
-
 function formatTime(samples: number): string {
   const totalSeconds = Math.floor(samples / SAMPLE_RATE);
   const minutes = Math.floor(totalSeconds / 60);
@@ -81,7 +75,7 @@ export function PlaybackPoc() {
             onClick={() => toggleTrackMute(track.id)}
             disabled={status !== "ready"}
           >
-            {TRACK_LABELS[track.id] ?? track.id}
+            {track.id}
           </button>
         ))}
       </div>
