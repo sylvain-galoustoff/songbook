@@ -1,0 +1,37 @@
+.pwa-update-prompt {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: #1f1329;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+
+  font-size: 14px;
+
+  button {
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  button:not(.dismiss) {
+    background: #863bff;
+    color: #fff;
+  }
+
+  button.dismiss {
+    background: transparent;
+    color: #cbb8f0;
+  }
+}
