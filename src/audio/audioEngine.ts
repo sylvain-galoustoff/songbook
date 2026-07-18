@@ -3,6 +3,7 @@ import type {
   TrackPayload,
   WorkletToMainMessage,
 } from "./worklet/protocol";
+import type { TrackByteProvider, TrackRequest } from "./trackProvider";
 // "?worker&url" force Vite à transpiler ce module et à l'émettre comme
 // fichier séparé (pas de la même façon qu'un asset générique) : nécessaire
 // pour que le worklet reçoive du JS valide, pas la source TS brute inlinée.
@@ -12,7 +13,9 @@ export const SAMPLE_RATE = 44100;
 
 export interface TrackSource {
   id: string;
-  url: string;
+  instrument: string;
+  durationSamples: number;
+  channels: number;
 }
 
 export interface LoopRange {
@@ -67,16 +70,18 @@ export class AudioEngine {
     return this.durationSamples;
   }
 
-  async loadTracks(sources: TrackSource[]): Promise<void> {
+  async loadTracks(
+    sources: TrackRequest[],
+    provider: TrackByteProvider,
+  ): Promise<TrackSource[]> {
     await this.workletReady;
 
     const arrayBuffers = await Promise.all(
-      sources.map((source) =>
-        fetch(source.url).then((response) => response.arrayBuffer()),
-      ),
+      sources.map((source) => provider.fetchTrackBytes(source)),
     );
 
     const tracks: TrackPayload[] = [];
+    const trackSources: TrackSource[] = [];
     const transferables: ArrayBuffer[] = [];
 
     // Décodage séquentiel : décoder toutes les pistes en parallèle ferait
@@ -91,10 +96,17 @@ export class AudioEngine {
         transferables.push(buffer);
       }
       tracks.push({ id: sources[i].id, channels, length: audioBuffer.length });
+      trackSources.push({
+        id: sources[i].id,
+        instrument: sources[i].instrument,
+        durationSamples: audioBuffer.length,
+        channels: audioBuffer.numberOfChannels,
+      });
     }
 
     this.durationSamples = Math.max(...tracks.map((track) => track.length));
     this.postMessage({ type: "loadTracks", tracks }, transferables);
+    return trackSources;
   }
 
   async play(): Promise<void> {

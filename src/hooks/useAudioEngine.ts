@@ -1,17 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { AudioEngine, type LoopRange, type TrackSource } from "../audio/audioEngine";
+import { StaticTrackProvider, type TrackRequest } from "../audio/trackProvider";
 
-const TRACK_SOURCES: TrackSource[] = [
-  { id: "Batterie", url: "/Batterie.flac" },
-  { id: "Chant1", url: "/Chant1.flac" },
-  { id: "Clavier", url: "/Clavier.flac" },
-  { id: "Guitare", url: "/Guitare.flac" },
+const TRACK_REQUESTS: TrackRequest[] = [
+  { id: "Batterie", instrument: "Batterie" },
+  { id: "Chant1", instrument: "Chant1" },
+  { id: "Clavier", instrument: "Clavier" },
+  { id: "Guitare", instrument: "Guitare" },
 ];
 
 export type PlaybackStatus = "loading" | "ready" | "error";
 
 export function useAudioEngine() {
   const engineRef = useRef<AudioEngine | null>(null);
+  const providerRef = useRef(new StaticTrackProvider());
   const [status, setStatus] = useState<PlaybackStatus>("loading");
   const [isPlaying, setIsPlaying] = useState(false);
   const [mutedTracks, setMutedTracks] = useState<Record<string, boolean>>({});
@@ -19,6 +21,14 @@ export function useAudioEngine() {
   const [duration, setDuration] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
   const [loop, setLoop] = useState<LoopRange>({ start: null, end: null });
+  const [tracks, setTracks] = useState<TrackSource[]>(() =>
+    TRACK_REQUESTS.map((request) => ({
+      id: request.id,
+      instrument: request.instrument,
+      durationSamples: 0,
+      channels: 0,
+    })),
+  );
 
   useEffect(() => {
     // Garde anti-StrictMode : ignore la résolution d'un engine déjà nettoyé
@@ -30,9 +40,10 @@ export function useAudioEngine() {
     engine.setLoopListener((range) => setLoop(range));
 
     engine
-      .loadTracks(TRACK_SOURCES)
-      .then(() => {
+      .loadTracks(TRACK_REQUESTS, providerRef.current)
+      .then((loadedTracks) => {
         if (!cancelled) {
+          setTracks(loadedTracks);
           setStatus("ready");
           setDuration(engine.getDurationSamples());
         }
@@ -96,7 +107,7 @@ export function useAudioEngine() {
     status,
     isPlaying,
     togglePlayPause,
-    tracks: TRACK_SOURCES,
+    tracks,
     mutedTracks,
     toggleTrackMute,
     position,

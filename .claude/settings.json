@@ -17,7 +17,9 @@
       "Bash(npm uninstall:*)",
       "Bash(firebase deploy:*)",
       "Bash(npx firebase deploy:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean:*)"
     ],
     "allow": [
       "Bash(npm run dev:*)",
@@ -28,7 +30,27 @@
       "Bash(git status)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+      "Bash(git switch:*)",
+      "Bash(git branch:*)",
+      "Bash(git stash:*)",
+      "Bash(git restore:*)"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/copy-session-log.sh",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }

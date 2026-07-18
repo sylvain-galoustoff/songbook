@@ -1,19 +1,9 @@
 # État des lieux du code — Songbook
 
 Document généré par analyse statique du dépôt à la date du 2026-07-18,
-branche `feat/audio-sync-poc`. Constat factuel uniquement : aucune
-recommandation, aucune implémentation.
-
-Mise à jour le 2026-07-18 (même jour) : la branche contenait des
-modifications non commitées au moment de la première rédaction du
-document. Elles sont intégrées ici. Changements constatés depuis la
-version précédente :
-- les pistes de démonstration sont passées de 3 fichiers MP3 stéréo
-  (`guitar.mp3`, `basse.mp3`, `batterie.mp3`) à 4 fichiers **FLAC mono**
-  (`Batterie.flac`, `Chant1.flac`, `Clavier.flac`, `Guitare.flac`) —
-  ceci corrige les deux écarts de format précédemment relevés ;
-- le dictionnaire de labels d'affichage (`TRACK_LABELS`) a été supprimé
-  de `PlaybackPoc.tsx` ; l'UI affiche désormais l'`id` brut de la piste.
+branche `feat/audio-sync-poc` (état non commité de la copie de travail
+inclus). Constat factuel uniquement : aucune recommandation, aucune
+implémentation.
 
 ## 1. Arborescence
 
@@ -28,7 +18,8 @@ src/
 │   ├── react.svg                              — logo React par défaut du template Vite (asset)
 │   └── vite.svg                                — logo Vite par défaut du template Vite (asset)
 ├── audio/
-│   ├── audioEngine.ts                          — classe AudioEngine : création AudioContext, chargement/décodage pistes, API play/pause/seek/mute/loop (145 lignes)
+│   ├── audioEngine.ts                          — classe AudioEngine : création AudioContext, chargement/décodage pistes, API play/pause/seek/mute/loop (157 lignes)
+│   ├── trackProvider.ts                        — abstraction TrackByteProvider + implémentation StaticTrackProvider (fetch depuis public/) (21 lignes)
 │   └── worklet/
 │       ├── mixer-processor.ts                  — AudioWorkletProcessor : mixage, index maître, gain/rampe, boucle A→B (256 lignes)
 │       └── protocol.ts                         — types des messages thread principal ↔ worklet (23 lignes)
@@ -40,7 +31,7 @@ src/
 │       ├── PwaUpdatePrompt.scss                — styles du composant (37 lignes)
 │       └── PwaUpdatePrompt.tsx                 — bandeau "nouvelle version disponible" (Workbox) (33 lignes)
 ├── hooks/
-│   └── useAudioEngine.ts                       — hook React encapsulant AudioEngine + état UI (110 lignes)
+│   └── useAudioEngine.ts                       — hook React encapsulant AudioEngine + état UI (121 lignes)
 ├── router/
 │   └── index.tsx                                — un seul route "/" → App (9 lignes)
 └── styles/
@@ -48,9 +39,10 @@ src/
     └── reset.scss                               — reset CSS (135 lignes)
 ```
 
-Total du code applicatif (hors assets) : 1120 lignes.
+Total du code applicatif (hors assets) : 1159 lignes.
 
-Répertoires prévus par CLAUDE.md mais **absents** : `src/firebase/`, `src/types/`.
+Répertoires prévus par la structure documentée dans CLAUDE.md mais
+**absents** : `src/firebase/`, `src/types/`.
 
 ## 2. Dépendances
 
@@ -80,27 +72,28 @@ Répertoires prévus par CLAUDE.md mais **absents** : `src/firebase/`, `src/type
 }
 ```
 
-- Aucune dépendance `firebase` (ni `firebase`, ni `firebase-admin`, ni SDK modulaire) n'est présente dans `package.json`, ni ailleurs dans le dépôt (recherche `firebase` limitée à deux lignes de permissions dans `.claude/settings.json`).
+- Aucune dépendance `firebase` (ni `firebase`, ni `firebase-admin`, ni SDK modulaire) n'est présente dans `package.json`, ni ailleurs dans le dépôt (recherche `firebase` limitée à des lignes de permissions dans `.claude/settings.json`, sans rapport avec le code applicatif).
 - Aucune dépendance de test (`vitest`, `@testing-library/*`, etc.).
 - Node : v22.23.1 (fixé par `.nvmrc` = `22`).
 - npm : 10.9.8.
 - `package.json` ne définit **aucun script `test`**, alors que CLAUDE.md documente `npm run test — Vitest`.
+- `npm run lint` (ESLint) et `tsc -b --noEmit` s'exécutent tous deux sans erreur sur l'état actuel du dépôt.
 
 ## 3. Moteur audio
 
-Fichiers présents dans `src/audio/` : `audioEngine.ts`, `worklet/protocol.ts`, `worklet/mixer-processor.ts`. Aucun fichier de "transport" ou de "boucle" séparé : cette logique est intégrée directement dans `audioEngine.ts` (thread principal) et `mixer-processor.ts` (worklet).
+Fichiers présents dans `src/audio/` : `audioEngine.ts`, `trackProvider.ts`, `worklet/protocol.ts`, `worklet/mixer-processor.ts`. Aucun fichier de "transport" ou de "boucle" séparé : cette logique est intégrée directement dans `audioEngine.ts` (thread principal) et `mixer-processor.ts` (worklet).
 
 ### `audioEngine.ts` — API publique exportée
 
 - `SAMPLE_RATE` (constante = 44100)
-- `interface TrackSource { id, url }`
+- `interface TrackSource { id, instrument, durationSamples, channels }` — métadonnées réelles d'une piste, connues seulement après décodage
 - `interface LoopRange { start, end }`
 - `class AudioEngine` :
   - `constructor()`
   - `setPositionListener(listener)`
   - `setLoopListener(listener)`
   - `getDurationSamples()`
-  - `loadTracks(sources: TrackSource[]): Promise<void>`
+  - `loadTracks(sources: TrackRequest[], provider: TrackByteProvider): Promise<TrackSource[]>`
   - `play(): Promise<void>`
   - `pause(): void`
   - `setTrackMuted(id, muted): void`
@@ -109,6 +102,14 @@ Fichiers présents dans `src/audio/` : `audioEngine.ts`, `worklet/protocol.ts`, 
   - `dispose(): void`
 
 Pas de méthode `stop()`, `setLoop(a,b)`/`clearLoop()` explicites : le protocole n'expose qu'un `toggleLoopPoint` à trois états (rien → A → B → rien), piloté par un seul bouton UI. Pas de méthode de sélection de morceau (un seul morceau est câblé en dur, cf. section 6).
+
+### `trackProvider.ts` — API publique exportée
+
+- `interface TrackRequest { id, instrument }` — ce qui est demandé (avant fetch)
+- `interface TrackByteProvider { fetchTrackBytes(track: TrackRequest): Promise<ArrayBuffer> }` — contrat d'obtention des octets bruts d'une piste
+- `class StaticTrackProvider implements TrackByteProvider` — unique implémentation : fait `fetch(`/${track.id}.flac`)` sur `public/`. Le chemin est construit par convention de nommage (id de piste = nom de fichier), sans passer par Firestore/Storage.
+
+Cette abstraction sépare la source des octets (aujourd'hui : fichiers statiques `public/`) du décodage/mixage dans `AudioEngine`, ce qui rendrait un remplacement futur par un fournisseur Firebase Storage possible sans toucher au moteur — mais ce remplacement n'existe pas encore : `StaticTrackProvider` est la seule implémentation du dépôt.
 
 ### `worklet/protocol.ts` — protocole de messages réellement implémenté
 
@@ -130,7 +131,7 @@ Worklet → thread principal (`WorkletToMainMessage`) :
 
 - Rien d'identifié comme stub silencieux : chaque message du protocole a un handler implémenté dans `mixer-processor.ts` (`handleMessage`).
 - Le paramètre `_inputs` de `process()` est explicitement ignoré (préfixé `_`), cohérent avec `numberOfInputs: 0` déclaré à la création du node — pas du code mort, un choix volontaire (pas d'entrée audio).
-- Pas de gestion d'erreur de piste individuelle : `loadTracks` dans `audioEngine.ts` utilise `Promise.all` pour le fetch puis une boucle séquentielle pour le décodage, mais **aucun `try/catch`** n'entoure fetch ou décodage — une erreur sur une piste fait planter la promesse globale sans message d'erreur ciblé ni état "quelle piste a échoué" (cf. section 4).
+- Pas de gestion d'erreur de piste individuelle : `loadTracks` dans `audioEngine.ts` utilise `Promise.all` sur `provider.fetchTrackBytes(...)` puis une boucle séquentielle pour le décodage, mais **aucun `try/catch`** n'entoure fetch ou décodage — une erreur sur une piste fait planter la promesse globale sans message d'erreur ciblé ni état "quelle piste a échoué" (cf. section 4). `StaticTrackProvider.fetchTrackBytes` ne vérifie pas non plus `response.ok` avant d'appeler `.arrayBuffer()` : une 404 ne lève pas d'erreur explicite, elle produit un `ArrayBuffer` qui échouera probablement au décodage avec un message générique.
 - Pas de fondu au raccord de boucle (micro-fade), conforme à la spec qui le marque optionnel/post-v1.
 - Pas d'implémentation du ralentissement sans changement de pitch (explicitement hors périmètre v1 selon la spec).
 
@@ -148,9 +149,9 @@ Worklet → thread principal (`WorkletToMainMessage`) :
 | Décodage séquentiel des pistes (fetch parallèle, décodage séquentiel) | Respecté | `src/audio/audioEngine.ts` |
 | Transfert des buffers Int16 au worklet via transférables | Respecté (`transferables` passés à `postMessage`) | `src/audio/audioEngine.ts` |
 | Chargement du worklet via `audioWorklet.addModule()` + fichier dédié Vite | Respecté (`?worker&url`) | `src/audio/audioEngine.ts` |
-| Format audio source : FLAC | Respecté | `src/hooks/useAudioEngine.ts` référence désormais `Batterie.flac`, `Chant1.flac`, `Clavier.flac`, `Guitare.flac` (vérifié via `ffprobe` : codec `flac`, 44100 Hz) |
+| Format audio source : FLAC | Respecté | `public/Batterie.flac`, `Chant1.flac`, `Clavier.flac`, `Guitare.flac` (vérifié via `ffprobe` : codec `flac`, 44100 Hz) |
 | Mono quand la source est mono | Respecté | les 4 fichiers `public/*.flac` sont mono (`channels=1`, vérifié via `ffprobe`) |
-| Si UNE piste échoue, bloquer tout le morceau et signaler laquelle | **Absent** | `src/audio/audioEngine.ts` (`loadTracks` n'a aucun `try/catch`, aucune piste identifiée en cas d'échec) |
+| Si UNE piste échoue, bloquer tout le morceau et signaler laquelle | **Absent** | `src/audio/audioEngine.ts`, `src/audio/trackProvider.ts` (aucun `try/catch`, aucune vérification `response.ok`, aucune piste identifiée en cas d'échec) |
 | États UI « téléchargement X/N » puis « préparation… » | **Absent** (seuls 3 états globaux `loading/ready/error` existent, sans détail X/N) | `src/hooks/useAudioEngine.ts` |
 | Estimer le poids mémoire avant décodage, avertir si dépassement budget | **Absent** | aucune trace dans `src/audio/audioEngine.ts` |
 | Cran de sécurité 32 kHz pour cas extrêmes | Absent (marqué optionnel/hors v1 dans la spec elle-même) | — |
@@ -161,13 +162,13 @@ Worklet → thread principal (`WorkletToMainMessage`) :
 | `navigator.storage.persist()` / écran de gestion du stockage | **Absent** | aucune trace |
 | Firebase Auth (allowlist d'emails) | **Absent** | aucune dépendance `firebase`, aucun code d'auth |
 | Firestore (songs/tracks/members) | **Absent** | aucune dépendance, aucun modèle de données implémenté |
-| Storage Firebase (fichiers audio) | **Absent** — les pistes sont servies depuis `public/` (statique Vite), pas depuis Firebase Storage | `public/*.mp3` |
+| Storage Firebase (fichiers audio) | **Absent** — les pistes sont servies depuis `public/` (statique Vite), pas depuis Firebase Storage | `public/*.flac`, `src/audio/trackProvider.ts` |
 | Règles de sécurité Firestore/Storage | **Absent** | aucun fichier `*.rules` dans le dépôt |
-| TypeScript strict | **Violé** | `tsconfig.app.json`/`tsconfig.node.json` n'activent `"strict"` nulle part |
+| TypeScript strict | Respecté | `"strict": true` présent dans `tsconfig.app.json` et `tsconfig.node.json` |
 | Pas de `any` sauf justification | Respecté (aucune occurrence de `any` trouvée dans `src/`) | — |
 | Composants fonctionnels + hooks uniquement | Respecté | `src/components/`, `src/hooks/` |
 | Logique audio indépendante des composants React | Respecté (`src/audio/` n'importe rien de React) | `src/audio/` |
-| Identifiants de code en anglais | Partiel — le code applicatif (`audioEngine`, `mixer-processor`…) est en anglais, mais les `id` de piste utilisés comme identifiants (`Batterie`, `Chant1`, `Clavier`, `Guitare`) sont en français | `src/hooks/useAudioEngine.ts` |
+| Identifiants de code en anglais | Partiel — le code applicatif (`audioEngine`, `mixer-processor`, `trackProvider`…) est en anglais, mais les `id`/`instrument` de piste utilisés comme identifiants (`Batterie`, `Chant1`, `Clavier`, `Guitare`) sont en français | `src/hooks/useAudioEngine.ts` |
 
 ## 5. Firebase
 
@@ -175,8 +176,8 @@ Worklet → thread principal (`WorkletToMainMessage`) :
 - Aucun fichier de configuration Firebase (`firebase.json`, `.firebaserc`) dans le dépôt.
 - Aucune règle de sécurité (`firestore.rules`, `storage.rules`) présente.
 - Aucun code d'authentification, aucune allowlist d'emails, aucun accès Firestore ou Storage nulle part dans `src/`.
-- Les seules mentions de "firebase" dans tout le dépôt sont deux lignes de permissions dans `.claude/settings.json` (règles d'autorisation Bash/Read pour un futur usage de la CLI Firebase et des clés `serviceAccount`/`firebase-adminsdk`), ce qui indique une intention future mais aucune implémentation actuelle.
-- Les pistes audio sont servies en statique depuis `public/` (mp3), pas depuis Firebase Storage.
+- Les seules mentions de "firebase" dans tout le dépôt sont des lignes de permissions dans `.claude/settings.json` (règles d'autorisation Bash/Read pour un futur usage de la CLI Firebase et des clés `serviceAccount`/`firebase-adminsdk`), ce qui indique une intention future mais aucune implémentation actuelle.
+- Les pistes audio sont servies en statique depuis `public/` (FLAC), pas depuis Firebase Storage ; `src/audio/trackProvider.ts` définit une abstraction (`TrackByteProvider`) qui pourrait accueillir un fournisseur Firebase Storage plus tard, mais seule `StaticTrackProvider` existe aujourd'hui.
 - Conclusion : le backend Firebase décrit dans CLAUDE.md est intégralement absent du code. Le projet actuel est un front-end pur, sans back-end.
 
 ## 6. Ce qui fonctionne / ne fonctionne pas
@@ -185,8 +186,8 @@ Constat basé sur lecture du code, `npm run lint` (0 erreur) et `tsc -b --noEmit
 
 Ce qui est démontrable par lecture de code / compilation :
 - Le projet compile sans erreur TypeScript et passe le lint sans erreur.
-- Un unique morceau est câblé en dur dans `useAudioEngine.ts` (4 pistes FLAC mono 44100 Hz : `Batterie.flac`, `Chant1.flac`, `Clavier.flac`, `Guitare.flac`, durée ~8 min 30 s chacune, servies depuis `public/`) — il n'existe aucune sélection de morceau, aucune liste de morceaux. Estimation mémoire PCM Int16 pour ce jeu de pistes : ~180 Mo au total (4 pistes mono × ~510 s × 44100 Hz × 2 octets), largement sous le plafond de 500 Mo de la spec — cohérent avec le fait qu'aucun garde-fou mémoire n'est nécessaire ici, mais ce garde-fou reste absent du code (cf. section 4).
-- Trois fichiers MP3 devenus orphelins (`public/guitar.mp3`, `public/basse.mp3`, `public/batterie.mp3`, ~34 Mo au total) restent sur disque sans être référencés par aucun code depuis le passage aux FLAC ; ils seront copiés tels quels dans `dist/` au prochain build.
+- Un unique morceau est câblé en dur dans `useAudioEngine.ts` (`TRACK_REQUESTS` : 4 pistes `{ id, instrument }` — `Batterie`, `Chant1`, `Clavier`, `Guitare` — résolues par `StaticTrackProvider` vers `public/Batterie.flac` etc., mono 44100 Hz, durée ~8 min 30 s chacune) — il n'existe aucune sélection de morceau, aucune liste de morceaux.
+- Estimation mémoire PCM Int16 pour ce jeu de pistes : ~180 Mo au total (4 pistes mono × ~510 s × 44100 Hz × 2 octets), largement sous le plafond de 500 Mo de la spec — mais aucun garde-fou d'estimation avant décodage n'existe dans le code (cf. section 4), ce constat repose sur un calcul manuel, pas sur une fonctionnalité de l'app.
 - L'architecture play/pause/seek/mute/boucle A→B suit le protocole décrit en section 3, avec un index maître unique dans le worklet et un mixage échantillon par échantillon.
 - Le service worker PWA (Workbox via `vite-plugin-pwa`) est configuré pour précacher le shell et exclure l'audio ; un composant `PwaUpdatePrompt` gère la notification de mise à jour.
 
@@ -210,6 +211,5 @@ Absent, donc non fonctionnel par construction (aucune tentative d'implémentatio
 - **Aucune infrastructure Firebase** : sans décision sur le projet Firebase (Auth/Firestore/Storage) et sans règles de sécurité écrites, impossible d'avancer sur la persistance des morceaux, l'allowlist ou le stockage des fichiers audio réels — tout le code actuel dépend de fichiers statiques dans `public/`.
 - **Jeu de test encore limité** : le jeu de pistes FLAC mono actuel (4 pistes, ~8 min 30 s) est conforme au format visé mais reste en deçà du pire cas de la spec (8 pistes, 12 min) ; le budget mémoire au plafond (~500 Mo) et le garde-fou d'estimation avant décodage (toujours absent du code, cf. section 4) n'ont donc pas été mis à l'épreuve dans les conditions extrêmes.
 - **Absence totale de tests automatisés** : `npm run test` est documenté dans CLAUDE.md mais n'existe pas (pas de script, pas de dépendance Vitest). Toute vérification de non-régression sur la synchro est actuellement manuelle.
-- **Gestion d'erreur de chargement absente** : la règle "une piste échouée bloque tout le morceau et signale laquelle" n'est pas implémentée ; un `try/catch` et un état d'erreur détaillé par piste restent à écrire avant tout usage au-delà du POC.
-- **TypeScript strict non activé** : aucun `tsconfig` du dépôt ne porte `"strict": true`, ce qui contredit une convention explicite de CLAUDE.md et peut laisser passer des erreurs de types que la convention est censée empêcher.
+- **Gestion d'erreur de chargement absente** : la règle "une piste échouée bloque tout le morceau et signale laquelle" n'est pas implémentée ; ni `AudioEngine.loadTracks` ni `StaticTrackProvider.fetchTrackBytes` n'ont de `try/catch` ou de vérification `response.ok`. Un état d'erreur détaillé par piste reste à écrire avant tout usage au-delà du POC.
 - **Pas de vérification empirique iOS** : la contrainte "iOS doit être correctement supporté" (priorité 2) n'a fait l'objet d'aucun test constaté dans ce dépôt (pas de captures, pas de notes, pas de CI mobile).
