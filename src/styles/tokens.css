@@ -1,0 +1,11 @@
+:root {
+  --primary: #304878;
+  --secondary: #dc3c64;
+  --white: #fff;
+  --background: #1a384c;
+  --disabled: #adaac5;
+
+  --borderRadius: 12px;
+
+  --font-size: 18px;
+}
