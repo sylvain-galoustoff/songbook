@@ -1,215 +1,332 @@
-# État des lieux du code — Songbook
+# État des lieux — Songbook
 
-Document généré par analyse statique du dépôt à la date du 2026-07-18,
-branche `feat/audio-sync-poc` (état non commité de la copie de travail
-inclus). Constat factuel uniquement : aucune recommandation, aucune
-implémentation.
+Document généré automatiquement (`/etat-des-lieux`). Constat factuel, pas de
+recommandations. Dernière génération : 2026-07-19, à partir du commit `01d4f34`
+(branche `master`), avec les fichiers suivants modifiés mais non commités dans
+la copie de travail : `CLAUDE.md`, `.claude/rules/audio-engine.md`,
+`src/audio/audioEngine.ts`, `src/hooks/useAudioEngine.ts`,
+`src/components/PlaybackPoc/PlaybackPoc.tsx`, `src/views/Home/Home.tsx`,
+`docs/etat-des-lieux.md` (ce fichier).
 
-## 1. Arborescence
+## 1. Arborescence de `src/`
 
 ```
 src/
-├── App.scss                                  — styles racine de l'app (184 lignes)
-├── App.tsx                                    — composant racine, monte PlaybackPoc (8 lignes)
-├── main.tsx                                    — point d'entrée React, monte le router + PwaUpdatePrompt (13 lignes)
-├── vite-env.d.ts                               — déclarations d'ambiance Vite par défaut (3 lignes)
+├── App.tsx                          (8 lignes)  — composant racine historique, N'EST PLUS MONTÉ (voir §3bis/§6, code mort)
+├── App.scss                         (184 lignes) — styles associés à App.tsx (mort avec lui)
+├── main.tsx                         (16 lignes) — point d'entrée réel : monte AuthProvider + RouterProvider + PwaUpdatePrompt
+├── vite-env.d.ts                    (16 lignes) — déclarations d'environnement Vite
+│
 ├── assets/
-│   ├── hero.png                               — image (asset, non listée en lignes)
-│   ├── react.svg                              — logo React par défaut du template Vite (asset)
-│   └── vite.svg                                — logo Vite par défaut du template Vite (asset)
+│   ├── hero.png                     (binaire)   — image, usage non trouvé dans le code
+│   ├── react.svg                    (0 ligne)   — asset par défaut du template Vite, inutilisé
+│   └── vite.svg                     (1 ligne)   — asset par défaut du template Vite, inutilisé
+│
 ├── audio/
-│   ├── audioEngine.ts                          — classe AudioEngine : création AudioContext, chargement/décodage pistes, API play/pause/seek/mute/loop (157 lignes)
-│   ├── trackProvider.ts                        — abstraction TrackByteProvider + implémentation StaticTrackProvider (fetch depuis public/) (21 lignes)
+│   ├── audioEngine.ts               (184 lignes) — classe AudioEngine + TrackLoadError : AudioContext + AudioWorkletNode, chargement/décodage des pistes (erreurs attribuées à la piste fautive), API play/pause/seek/mute/loop
+│   ├── trackProvider.ts             (21 lignes)  — StaticTrackProvider : fetch des .flac depuis /public (pas Firebase Storage)
 │   └── worklet/
-│       ├── mixer-processor.ts                  — AudioWorkletProcessor : mixage, index maître, gain/rampe, boucle A→B (256 lignes)
-│       └── protocol.ts                         — types des messages thread principal ↔ worklet (23 lignes)
+│       ├── mixer-processor.ts       (256 lignes) — AudioWorkletProcessor : mixage, index maître, gain/rampe, boucle A→B
+│       └── protocol.ts              (23 lignes)  — types des messages thread principal ↔ worklet
+│
 ├── components/
-│   ├── PlaybackPoc/
-│   │   ├── PlaybackPoc.scss                    — styles du composant (74 lignes)
-│   │   └── PlaybackPoc.tsx                     — UI de lecture : play/pause, seek bar, mutes, bouton boucle (84 lignes)
-│   └── PwaUpdatePrompt/
-│       ├── PwaUpdatePrompt.scss                — styles du composant (37 lignes)
-│       └── PwaUpdatePrompt.tsx                 — bandeau "nouvelle version disponible" (Workbox) (33 lignes)
+│   ├── Button/                      (Button.tsx 49 l. + module.scss 46 l.) — bouton générique (lien ou submit)
+│   ├── Header/                      (Header.tsx 32 l. + module.scss 52 l.) — en-tête titre/sous-titre/logout
+│   ├── PlaybackPoc/                 (PlaybackPoc.tsx 89 l. + scss 74 l.) — UI du lecteur multipiste (POC), seul consommateur de useAudioEngine, affiche désormais le message d'erreur de chargement le cas échéant
+│   ├── PwaUpdatePrompt/             (PwaUpdatePrompt.tsx 33 l. + scss 37 l.) — bandeau "nouvelle version" du SW, sans auto-reload
+│   ├── SongCard/                    (SongCard.tsx 18 l. + module.scss 37 l.) — carte d'un morceau (titre + chevron)
+│   ├── SongList/                    (SongList.tsx 29 l. + module.scss 22 l.) — liste de SongCard ou état vide
+│   └── TextField/                   (TextField.tsx 30 l. + module.scss 47 l.) — champ de formulaire label+input
+│
+├── firebase/
+│   └── config.ts                    (15 lignes)  — initializeApp + getAuth uniquement. Pas de getFirestore, pas de getStorage.
+│
 ├── hooks/
-│   └── useAudioEngine.ts                       — hook React encapsulant AudioEngine + état UI (121 lignes)
+│   ├── AuthProvider.tsx             (18 lignes)  — Context provider basé sur onAuthStateChanged
+│   ├── useAuthUser.ts                (19 lignes)  — hook + Context de lecture de l'état auth
+│   └── useAudioEngine.ts            (135 lignes) — hook React encapsulant AudioEngine, liste de pistes CODÉE EN DUR (4 pistes), expose désormais `loadError` (message identifiant la piste en échec)
+│
 ├── router/
-│   └── index.tsx                                — un seul route "/" → App (9 lignes)
-└── styles/
-    ├── index.scss                               — point d'entrée SCSS global (1 ligne)
-    └── reset.scss                               — reset CSS (135 lignes)
+│   ├── index.tsx                    (29 lignes)  — 3 routes : "/" (Home, protégée), "/login", "/signin"
+│   ├── ProtectedRoute.tsx           (17 lignes)  — redirige vers /login si pas d'utilisateur
+│   └── PublicOnlyRoute.tsx          (17 lignes)  — redirige vers / si utilisateur déjà connecté
+│
+├── styles/
+│   ├── index.scss                   (8 lignes)
+│   ├── reset.scss                   (135 lignes)
+│   └── tokens.css                   (12 lignes)
+│
+├── types/
+│   └── song.ts                      (4 lignes)   — type Song { id, title } — pas de tracks, pas de status, pas de metadata (tempo/key/order)
+│
+└── views/
+    ├── Home/                        (Home.tsx 39 l. + module.scss 17 l.) — écran principal, données de morceaux EN DUR (mockSongs)
+    ├── LogIn/                       (LogIn.tsx 76 l. + module.scss 50 l.) — formulaire signInWithEmailAndPassword, lien vers /signin
+    └── Signin/                      (Signin.tsx 95 l. + module.scss 50 l.) — formulaire createUserWithEmailAndPassword — voir §4/§7 : ce parcours est désormais explicitement interdit par CLAUDE.md à jour, mais toujours présent et accessible dans le code
 ```
-
-Total du code applicatif (hors assets) : 1159 lignes.
-
-Répertoires prévus par la structure documentée dans CLAUDE.md mais
-**absents** : `src/firebase/`, `src/types/`.
 
 ## 2. Dépendances
 
-`package.json` :
+**Node / npm (environnement d'exécution actuel)** : Node v22.23.1, npm 10.9.8.
+`.nvmrc` prescrit Node `22`. Aucune contrainte `engines` dans `package.json` (les
+seules entrées `engines` trouvées viennent de paquets tiers dans
+`package-lock.json`, pas du projet lui-même).
 
-```json
-"dependencies": {
-  "react": "^19.2.7",
-  "react-dom": "^19.2.7",
-  "react-router": "^8.2.0"
-},
-"devDependencies": {
-  "@eslint/js": "^10.0.1",
-  "@types/node": "^24.13.2",
-  "@types/react": "^19.2.17",
-  "@types/react-dom": "^19.2.3",
-  "@vitejs/plugin-react": "^6.0.3",
-  "eslint": "^10.6.0",
-  "eslint-plugin-react-hooks": "^7.1.1",
-  "eslint-plugin-react-refresh": "^0.5.3",
-  "globals": "^17.7.0",
-  "sass-embedded": "^1.100.0",
-  "typescript": "~6.0.2",
-  "typescript-eslint": "^8.62.0",
-  "vite": "^8.1.1",
-  "vite-plugin-pwa": "^1.3.0"
-}
-```
+**`dependencies`**
 
-- Aucune dépendance `firebase` (ni `firebase`, ni `firebase-admin`, ni SDK modulaire) n'est présente dans `package.json`, ni ailleurs dans le dépôt (recherche `firebase` limitée à des lignes de permissions dans `.claude/settings.json`, sans rapport avec le code applicatif).
-- Aucune dépendance de test (`vitest`, `@testing-library/*`, etc.).
-- Node : v22.23.1 (fixé par `.nvmrc` = `22`).
-- npm : 10.9.8.
-- `package.json` ne définit **aucun script `test`**, alors que CLAUDE.md documente `npm run test — Vitest`.
-- `npm run lint` (ESLint) et `tsc -b --noEmit` s'exécutent tous deux sans erreur sur l'état actuel du dépôt.
+| Paquet | Version |
+|---|---|
+| `@fontsource/alegreya-sans` | ^5.3.0 |
+| `@fontsource/work-sans` | ^5.3.0 |
+| `firebase` | ^12.16.0 |
+| `react` | ^19.2.7 |
+| `react-dom` | ^19.2.7 |
+| `react-icons` | ^5.7.0 |
+| `react-router` | ^8.2.0 |
+
+**`devDependencies`**
+
+| Paquet | Version |
+|---|---|
+| `@eslint/js` | ^10.0.1 |
+| `@types/node` | ^24.13.2 |
+| `@types/react` | ^19.2.17 |
+| `@types/react-dom` | ^19.2.3 |
+| `@vitejs/plugin-react` | ^6.0.3 |
+| `eslint` | ^10.6.0 |
+| `eslint-plugin-react-hooks` | ^7.1.1 |
+| `eslint-plugin-react-refresh` | ^0.5.3 |
+| `globals` | ^17.7.0 |
+| `sass-embedded` | ^1.100.0 |
+| `typescript` | ~6.0.2 |
+| `typescript-eslint` | ^8.62.0 |
+| `vite` | ^8.1.1 |
+| `vite-plugin-pwa` | ^1.3.0 |
+
+**Aucune dépendance de test** : ni `vitest` ni équivalent n'est présente dans
+`package.json`. Ce fait est maintenant signalé par un commentaire HTML dans
+`CLAUDE.md` (section « Commandes »), mais la commande `npm run test` reste
+documentée et **n'existe toujours pas**. Voir §7.
 
 ## 3. Moteur audio
 
-Fichiers présents dans `src/audio/` : `audioEngine.ts`, `trackProvider.ts`, `worklet/protocol.ts`, `worklet/mixer-processor.ts`. Aucun fichier de "transport" ou de "boucle" séparé : cette logique est intégrée directement dans `audioEngine.ts` (thread principal) et `mixer-processor.ts` (worklet).
+Fichiers réels dans `src/audio/` : `audioEngine.ts`, `trackProvider.ts`,
+`worklet/mixer-processor.ts`, `worklet/protocol.ts`. Pas d'autre fichier
+(pas de module "transport" ni "loop" séparés — tout est dans ces quatre fichiers).
 
-### `audioEngine.ts` — API publique exportée
+### Signatures publiques exportées
 
-- `SAMPLE_RATE` (constante = 44100)
-- `interface TrackSource { id, instrument, durationSamples, channels }` — métadonnées réelles d'une piste, connues seulement après décodage
-- `interface LoopRange { start, end }`
+`audioEngine.ts` :
+- `SAMPLE_RATE = 44100`
+- `interface TrackSource { id, instrument, durationSamples, channels }`
+- `interface LoopRange { start: number | null, end: number | null }`
+- `class TrackLoadError extends Error` — nouveau. Porte `trackId`, `instrument`
+  et `cause` (l'erreur d'origine), avec un message identifiant la piste en
+  échec (ex. `Échec du chargement de la piste "Guitare".`).
 - `class AudioEngine` :
   - `constructor()`
   - `setPositionListener(listener)`
   - `setLoopListener(listener)`
-  - `getDurationSamples()`
-  - `loadTracks(sources: TrackRequest[], provider: TrackByteProvider): Promise<TrackSource[]>`
-  - `play(): Promise<void>`
+  - `getDurationSamples(): number`
+  - `async loadTracks(sources, provider): Promise<TrackSource[]>` — lève
+    désormais un `TrackLoadError` (au lieu d'une erreur brute) si le fetch ou
+    le décodage d'une piste échoue.
+  - `async play(): Promise<void>`
   - `pause(): void`
   - `setTrackMuted(id, muted): void`
   - `seek(index): void`
   - `toggleLoopPoint(): void`
   - `dispose(): void`
 
-Pas de méthode `stop()`, `setLoop(a,b)`/`clearLoop()` explicites : le protocole n'expose qu'un `toggleLoopPoint` à trois états (rien → A → B → rien), piloté par un seul bouton UI. Pas de méthode de sélection de morceau (un seul morceau est câblé en dur, cf. section 6).
+`trackProvider.ts` :
+- `interface TrackRequest { id, instrument }`
+- `interface TrackByteProvider { fetchTrackBytes(track): Promise<ArrayBuffer> }`
+- `class StaticTrackProvider implements TrackByteProvider` — fetch statique
+  `/${track.id}.flac` (fichiers servis depuis `public/`, PAS depuis Firebase
+  Storage).
 
-### `trackProvider.ts` — API publique exportée
+`worklet/protocol.ts` :
+- `interface TrackPayload { id, channels: ArrayBuffer[], length }`
+- `type MainToWorkletMessage` = `loadTracks | play | pause | setTrackGain | seek | toggleLoopPoint`
+- `type WorkletToMainMessage` = `position | loop`
 
-- `interface TrackRequest { id, instrument }` — ce qui est demandé (avant fetch)
-- `interface TrackByteProvider { fetchTrackBytes(track: TrackRequest): Promise<ArrayBuffer> }` — contrat d'obtention des octets bruts d'une piste
-- `class StaticTrackProvider implements TrackByteProvider` — unique implémentation : fait `fetch(`/${track.id}.flac`)` sur `public/`. Le chemin est construit par convention de nommage (id de piste = nom de fichier), sans passer par Firestore/Storage.
+`worklet/mixer-processor.ts` :
+- `class MixerProcessor extends AudioWorkletProcessor`, enregistrée sous le nom
+  `"mixer-processor"`.
 
-Cette abstraction sépare la source des octets (aujourd'hui : fichiers statiques `public/`) du décodage/mixage dans `AudioEngine`, ce qui rendrait un remplacement futur par un fournisseur Firebase Storage possible sans toucher au moteur — mais ce remplacement n'existe pas encore : `StaticTrackProvider` est la seule implémentation du dépôt.
+### Protocole de messages effectivement implémenté
 
-### `worklet/protocol.ts` — protocole de messages réellement implémenté
+Thread principal → worklet : `loadTracks`, `play`, `pause`, `setTrackGain`,
+`seek`, `toggleLoopPoint`.
 
-Thread principal → worklet (`MainToWorkletMessage`) :
-- `loadTracks` (tableau de `TrackPayload { id, channels: ArrayBuffer[], length }`)
-- `play`
-- `pause`
-- `setTrackGain { id, gain }`
-- `seek { index }`
-- `toggleLoopPoint`
+Worklet → thread principal : `position` (throttlé à 0.1s), `loop` (start/end).
 
-Worklet → thread principal (`WorkletToMainMessage`) :
-- `position { index }`
-- `loop { start, end }`
+Ce protocole correspond maintenant exactement à celui documenté dans
+`.claude/rules/audio-engine.md` (la spec a été alignée sur le code : le
+message `toggleLoopPoint` sans paramètre y est désormais décrit tel qu'il est
+implémenté, à la place de l'ancien `setLoop`/`clearLoop` qui n'a jamais existé
+dans le code).
 
-Écart par rapport au protocole décrit dans `.claude/rules/audio-engine.md` : pas de message `stop` distinct de `pause`, pas de `setLoop`/`clearLoop` (remplacés par le toggle unique), pas de champs `channels`/`sampleRate` par piste dans le message (le `sampleRate` global vient de la variable globale du worklet, pas d'un message dédié).
+### Stubs et code mort
 
-### Ce qui est un stub ou du code mort
-
-- Rien d'identifié comme stub silencieux : chaque message du protocole a un handler implémenté dans `mixer-processor.ts` (`handleMessage`).
-- Le paramètre `_inputs` de `process()` est explicitement ignoré (préfixé `_`), cohérent avec `numberOfInputs: 0` déclaré à la création du node — pas du code mort, un choix volontaire (pas d'entrée audio).
-- Pas de gestion d'erreur de piste individuelle : `loadTracks` dans `audioEngine.ts` utilise `Promise.all` sur `provider.fetchTrackBytes(...)` puis une boucle séquentielle pour le décodage, mais **aucun `try/catch`** n'entoure fetch ou décodage — une erreur sur une piste fait planter la promesse globale sans message d'erreur ciblé ni état "quelle piste a échoué" (cf. section 4). `StaticTrackProvider.fetchTrackBytes` ne vérifie pas non plus `response.ok` avant d'appeler `.arrayBuffer()` : une 404 ne lève pas d'erreur explicite, elle produit un `ArrayBuffer` qui échouera probablement au décodage avec un message générique.
-- Pas de fondu au raccord de boucle (micro-fade), conforme à la spec qui le marque optionnel/post-v1.
-- Pas d'implémentation du ralentissement sans changement de pitch (explicitement hors périmètre v1 selon la spec).
+- **Aucun stub** : les fonctions exportées ont toutes un corps non trivial.
+- **`toggleLoopPoint`** implémente la boucle A→B complète (y compris le cas "B
+  derrière la tête de lecture" et "seek hors [A,B] efface la boucle"), telle
+  que figée dans `audio-engine.md`.
+- **Fin de piste** : à `masterIndex >= trackLength`, la lecture s'arrête
+  (`playing = false`), sans bouclage automatique — comportement documenté comme
+  volontaire pour ce POC (commentaire dans `mixer-processor.ts:188-191`).
+- **Échec de chargement d'une piste** : `loadTracks` attribue désormais
+  l'échec à la piste fautive via `TrackLoadError` (`audioEngine.ts:96-103` pour
+  le fetch, `:111-117` pour le décodage). `useAudioEngine.ts:57-66` capture
+  cette erreur et expose son message dans `loadError`. `PlaybackPoc.tsx`
+  l'affiche (`load-error`). Ce n'est plus un écart avec la spec (voir §4).
+- **`src/App.tsx`** (racine historique montant `<PlaybackPoc />`) n'est
+  référencé par aucun autre fichier. `index.html` charge `/src/main.tsx`, qui
+  monte le `router` (pas `App`). `App.tsx` et `App.scss` sont donc du **code
+  mort** — `PlaybackPoc` n'est atteignable que via ce fichier orphelin,
+  autrement dit **le POC audio n'est actuellement monté nulle part dans
+  l'application réelle** (voir §6). Ce POC reste volontairement en l'état
+  (code d'exemple), sans être relié au reste de l'app.
+- **`useAudioEngine.ts`** code en dur une liste fixe de 4 pistes
+  (`Batterie`, `Chant1`, `Clavier`, `Guitare`) au lieu de les charger depuis
+  Firestore — cohérent avec le stade POC, mais à noter comme donnée statique.
 
 ## 4. Écarts avec la spécification
 
-| Point de spec | Statut | Fichier concerné |
+*Spécification de référence : `CLAUDE.md` et `.claude/rules/audio-engine.md`
+tels que modifiés dans cette session (allowlist abandonnée, `tracks` en
+tableau embarqué, statut `draft`/`ready`, métadonnées audio par piste,
+protocole worklet aligné sur le code).*
+
+| Point de spec | Statut | Fichier(s) concerné(s) |
 |---|---|---|
-| Un seul `AudioContext` à 44100 Hz | Respecté | `src/audio/audioEngine.ts` |
-| Un seul `AudioWorkletNode`/`AudioWorkletProcessor` qui mixe toutes les pistes, pas de `AudioBufferSourceNode`/`<audio>` | Respecté | `src/audio/audioEngine.ts`, `src/audio/worklet/mixer-processor.ts` |
-| Pistes stockées en PCM Int16, jamais en `AudioBuffer` Float32 | Respecté (conversion immédiate après `decodeAudioData`) | `src/audio/audioEngine.ts` |
-| Index de lecture maître unique dans le worklet, source de vérité | Respecté | `src/audio/worklet/mixer-processor.ts` |
-| Mute = gain de piste à 0 dans le mixage, ramp anti-clic | Respecté | `src/audio/worklet/mixer-processor.ts` |
-| Boucle A→B sample-exact, bornage de l'index maître | Respecté (boucle testée par échantillon, pas par bloc) | `src/audio/worklet/mixer-processor.ts` |
-| Déblocage `AudioContext` sur interaction utilisateur (iOS) | Respecté (`context.resume()` dans `play()`) | `src/audio/audioEngine.ts` |
-| Décodage séquentiel des pistes (fetch parallèle, décodage séquentiel) | Respecté | `src/audio/audioEngine.ts` |
-| Transfert des buffers Int16 au worklet via transférables | Respecté (`transferables` passés à `postMessage`) | `src/audio/audioEngine.ts` |
-| Chargement du worklet via `audioWorklet.addModule()` + fichier dédié Vite | Respecté (`?worker&url`) | `src/audio/audioEngine.ts` |
-| Format audio source : FLAC | Respecté | `public/Batterie.flac`, `Chant1.flac`, `Clavier.flac`, `Guitare.flac` (vérifié via `ffprobe` : codec `flac`, 44100 Hz) |
-| Mono quand la source est mono | Respecté | les 4 fichiers `public/*.flac` sont mono (`channels=1`, vérifié via `ffprobe`) |
-| Si UNE piste échoue, bloquer tout le morceau et signaler laquelle | **Absent** | `src/audio/audioEngine.ts`, `src/audio/trackProvider.ts` (aucun `try/catch`, aucune vérification `response.ok`, aucune piste identifiée en cas d'échec) |
-| États UI « téléchargement X/N » puis « préparation… » | **Absent** (seuls 3 états globaux `loading/ready/error` existent, sans détail X/N) | `src/hooks/useAudioEngine.ts` |
-| Estimer le poids mémoire avant décodage, avertir si dépassement budget | **Absent** | aucune trace dans `src/audio/audioEngine.ts` |
-| Cran de sécurité 32 kHz pour cas extrêmes | Absent (marqué optionnel/hors v1 dans la spec elle-même) | — |
-| `SharedArrayBuffer` non utilisé en v1 | Respecté (aucune trace) | — |
-| Un seul morceau en RAM, libération au changement de morceau | Non vérifiable — il n'existe qu'un seul morceau câblé en dur, aucune fonctionnalité de changement de morceau n'existe | `src/hooks/useAudioEngine.ts` |
-| PWA : precache du shell uniquement, jamais l'audio | Respecté | `vite.config.ts` (`globIgnores` exclut mp3/flac/wav) |
-| Stockage hors-ligne des pistes en IndexedDB, téléchargement à la demande | **Absent** | aucune trace d'IndexedDB dans le dépôt |
-| `navigator.storage.persist()` / écran de gestion du stockage | **Absent** | aucune trace |
-| Firebase Auth (allowlist d'emails) | **Absent** | aucune dépendance `firebase`, aucun code d'auth |
-| Firestore (songs/tracks/members) | **Absent** | aucune dépendance, aucun modèle de données implémenté |
-| Storage Firebase (fichiers audio) | **Absent** — les pistes sont servies depuis `public/` (statique Vite), pas depuis Firebase Storage | `public/*.flac`, `src/audio/trackProvider.ts` |
-| Règles de sécurité Firestore/Storage | **Absent** | aucun fichier `*.rules` dans le dépôt |
-| TypeScript strict | Respecté | `"strict": true` présent dans `tsconfig.app.json` et `tsconfig.node.json` |
-| Pas de `any` sauf justification | Respecté (aucune occurrence de `any` trouvée dans `src/`) | — |
-| Composants fonctionnels + hooks uniquement | Respecté | `src/components/`, `src/hooks/` |
-| Logique audio indépendante des composants React | Respecté (`src/audio/` n'importe rien de React) | `src/audio/` |
-| Identifiants de code en anglais | Partiel — le code applicatif (`audioEngine`, `mixer-processor`, `trackProvider`…) est en anglais, mais les `id`/`instrument` de piste utilisés comme identifiants (`Batterie`, `Chant1`, `Clavier`, `Guitare`) sont en français | `src/hooks/useAudioEngine.ts` |
+| Un seul `AudioContext` (44100 Hz) + un seul `AudioWorkletNode` | **Respecté** | `src/audio/audioEngine.ts` |
+| Pas de `AudioBufferSourceNode`, pas de `<audio>`, pas de streaming | **Respecté** | `src/audio/audioEngine.ts`, `trackProvider.ts` |
+| Pistes en PCM Int16, jamais `AudioBuffer` Float32 conservé | **Respecté** | `mixer-processor.ts` (stocke `Int16Array`), conversion immédiate dans `audioEngine.ts:118-124` |
+| Index de lecture maître unique dans le worklet | **Respecté** | `mixer-processor.ts` (`masterIndex`) |
+| Mute = gain de piste à 0 dans le mixage, indépendant de la position | **Respecté** | `mixer-processor.ts:154-171` |
+| Rampe courte sur les changements de gain | **Respecté** | `mixer-processor.ts` (`GAIN_RAMP_DURATION_SECONDS = 0.005`) |
+| Boucle A→B sample-exact, un seul contrôle `toggleLoopPoint` à 3 états | **Respecté** | `mixer-processor.ts:107-131, 214-223` ; spec alignée dans `audio-engine.md` |
+| Décodage séquentiel des pistes (pas parallèle) | **Respecté** | `audioEngine.ts:109-132` (boucle `for` séquentielle), fetch en parallèle via `Promise.all` |
+| Transfert des buffers Int16 au worklet via `postMessage` + transférables | **Respecté** | `audioEngine.ts:135` (`transferables` peuplé et passé) |
+| Débloquer l'`AudioContext` sur interaction utilisateur (iOS) | **Respecté** | `audioEngine.ts:139-143` (`context.resume()` dans `play()`) |
+| Position affichée exclusivement via messages `position` du worklet | **Respecté** | `useAudioEngine.ts:45` (sauf pendant un drag de seek, cf. commentaire `useAudioEngine.ts:99-107`, écart mineur assumé) |
+| Si une piste échoue, bloquer tout le morceau et signaler laquelle | **Respecté** (nouveau) | `audioEngine.ts` (`TrackLoadError`), `useAudioEngine.ts:57-66` (`loadError`), `PlaybackPoc.tsx` (affichage) |
+| États UI "téléchargement X/N" puis "préparation…" | **Absent** (inchangé) | `PlaybackPoc.tsx` — un seul état `"loading"` générique ("Chargement…"), pas de progression |
+| Estimer le poids mémoire avant décodage, avertir si dépassement budget | **Absent** | aucune trace dans `audioEngine.ts` |
+| Estimation mémoire calculée à partir des seules métadonnées Firestore, avant tout téléchargement | **Absent** | Firestore n'est pas utilisé (voir §5) ; aucune estimation mémoire du tout actuellement |
+| Mode réduit 32 kHz (cran de sécurité mémoire) | **Absent** (explicitement hors v1 dans la spec) | — |
+| Libérer les références des buffers au changement de morceau | **Non vérifiable / absent** | `AudioEngine` ne gère qu'un seul morceau fixe pour l'instant (pas de flux "changer de morceau" implémenté) |
+| Wizard d'import : décodage local avant upload, rejet piste hors fréquence/durée du morceau | **Absent** | aucun composant/flux d'import de piste dans `src/` |
+| Champ `status` (`draft`/`ready`) sur les morceaux, morceau `draft` ni listé ni jouable | **Absent** | `types/song.ts` (`Song`) n'a que `id`/`title` ; `Home.tsx` liste `mockSongs` sans notion de statut |
+| Métadonnées audio par piste (sampleRate, durationSamples, channels, sizeBytes, contentHash) stockées | **Absent** | Firestore non utilisé ; `TrackSource` (local, en mémoire) n'a que `durationSamples`/`channels`, pas `sampleRate`/`sizeBytes`/`contentHash` |
+| **PWA installable, precache du shell uniquement, jamais l'audio** | **Respecté** | `vite.config.ts` (`globIgnores` exclut `mp3/flac/wav` explicitement) |
+| Audio hors-ligne en IndexedDB, téléchargé à la demande | **Absent** | aucune référence à IndexedDB dans `src/` ; les FLAC sont servis statiquement depuis `public/` |
+| Écran de gestion du stockage (`navigator.storage.estimate()`, purge) | **Absent** | aucun composant ni hook correspondant |
+| `navigator.storage.persist()` proposé | **Absent** | aucune référence trouvée |
+| **Auth : pas d'allowlist, pas d'inscription publique, comptes créés en console Firebase** | **Violé** | `Signin.tsx` implémente toujours `createUserWithEmailAndPassword`, exposé publiquement via la route `/signin` et un lien depuis `LogIn.tsx` (`Pas de compte ? Inscrivez-vous`) — contredit directement la nouvelle section « Auth » et la nouvelle règle « À NE JAMAIS FAIRE » de `CLAUDE.md` |
+| Règles de sécurité Firestore/Storage exigeant `request.auth != null` | **Absent** | aucun fichier `firestore.rules`/`storage.rules` dans le dépôt (voir §5) — sans conséquence pratique tant que Firestore/Storage ne sont pas branchés |
+| Firestore : `songs/{songId}` avec `tracks` en tableau embarqué (pas de sous-collection) | **Absent** | `Home.tsx` utilise un tableau `mockSongs` codé en dur ; aucun appel `getFirestore`/`collection` dans tout `src/` |
+| Storage : `songs/{songId}/{trackId}.flac` | **Absent** | les FLAC sont servis depuis `public/`, pas depuis Firebase Storage ; aucun appel `getStorage` dans `src/` |
+| Composants fonctionnels + hooks uniquement | **Respecté** | tous les composants lus sont des fonctions |
+| TypeScript strict, pas de `any` | **Respecté** | `tsconfig.app.json` a `"strict": true` ; aucun `any` rencontré dans les fichiers lus ; `npx tsc -b` passe sans erreur |
+| Logique audio indépendante des composants React | **Respecté** | `src/audio/` n'importe rien de React |
+| Ralentissement sans changement de pitch | **Absent** (explicitement hors périmètre v1 dans la spec) | — |
 
 ## 5. Firebase
 
-- Aucune dépendance Firebase installée (`package.json` ne référence ni `firebase` ni `firebase-admin`).
-- Aucun fichier de configuration Firebase (`firebase.json`, `.firebaserc`) dans le dépôt.
-- Aucune règle de sécurité (`firestore.rules`, `storage.rules`) présente.
-- Aucun code d'authentification, aucune allowlist d'emails, aucun accès Firestore ou Storage nulle part dans `src/`.
-- Les seules mentions de "firebase" dans tout le dépôt sont des lignes de permissions dans `.claude/settings.json` (règles d'autorisation Bash/Read pour un futur usage de la CLI Firebase et des clés `serviceAccount`/`firebase-adminsdk`), ce qui indique une intention future mais aucune implémentation actuelle.
-- Les pistes audio sont servies en statique depuis `public/` (FLAC), pas depuis Firebase Storage ; `src/audio/trackProvider.ts` définit une abstraction (`TrackByteProvider`) qui pourrait accueillir un fournisseur Firebase Storage plus tard, mais seule `StaticTrackProvider` existe aujourd'hui.
-- Conclusion : le backend Firebase décrit dans CLAUDE.md est intégralement absent du code. Le projet actuel est un front-end pur, sans back-end.
+- **Auth** : configurée et fonctionnelle côté client (`src/firebase/config.ts`
+  appelle `getAuth(app)`). `AuthProvider` écoute `onAuthStateChanged`.
+  Sign-in (`LogIn.tsx`) et sign-up (`Signin.tsx`) sont tous deux implémentés
+  avec email/mot de passe. **La spec a changé** (voir §4) : `CLAUDE.md`
+  interdit désormais explicitement tout parcours d'inscription publique et
+  prescrit des comptes créés uniquement en console Firebase — mais le code
+  n'a pas été modifié en conséquence, `Signin.tsx` et la route `/signin`
+  restent pleinement fonctionnels et accessibles depuis `LogIn.tsx`.
+- **Firestore** : **non configuré**. Aucun appel `getFirestore` dans le code.
+  Le modèle de données `songs/` (avec `tracks` embarqué et `status`) décrit
+  dans `CLAUDE.md` n'existe nulle part dans le code — `Home.tsx` utilise des
+  données en dur.
+- **Storage** : **non configuré**. Aucun appel `getStorage`. Les fichiers audio
+  sont servis comme assets statiques Vite depuis `public/*.flac`.
+- **Règles de sécurité** : **absentes**. Aucun fichier `firestore.rules`,
+  `storage.rules` ni `firebase.json` n'existe dans le dépôt (recherche à la
+  racine et sur deux niveaux, aucun résultat).
+- **Variables d'environnement** : `.env.local` et `.env.example` existent à la
+  racine (non lisibles depuis cet outil, exclus par la configuration de
+  permissions) ; `.gitignore` exclut correctement `.env` et `.env.local` du
+  dépôt Git.
 
 ## 6. Ce qui fonctionne / ne fonctionne pas
 
-Constat basé sur lecture du code, `npm run lint` (0 erreur) et `tsc -b --noEmit` (0 erreur) exécutés sur ce dépôt. Je n'ai pas ouvert l'app dans un navigateur ni testé le rendu audio réel dans cette session : les points suivants sur le comportement runtime sont déduits du code, pas observés en exécution.
+**Vérifié par exécution d'outils dans cette session** (pas de serveur de dev
+lancé ni de test manuel dans un navigateur) :
 
-Ce qui est démontrable par lecture de code / compilation :
-- Le projet compile sans erreur TypeScript et passe le lint sans erreur.
-- Un unique morceau est câblé en dur dans `useAudioEngine.ts` (`TRACK_REQUESTS` : 4 pistes `{ id, instrument }` — `Batterie`, `Chant1`, `Clavier`, `Guitare` — résolues par `StaticTrackProvider` vers `public/Batterie.flac` etc., mono 44100 Hz, durée ~8 min 30 s chacune) — il n'existe aucune sélection de morceau, aucune liste de morceaux.
-- Estimation mémoire PCM Int16 pour ce jeu de pistes : ~180 Mo au total (4 pistes mono × ~510 s × 44100 Hz × 2 octets), largement sous le plafond de 500 Mo de la spec — mais aucun garde-fou d'estimation avant décodage n'existe dans le code (cf. section 4), ce constat repose sur un calcul manuel, pas sur une fonctionnalité de l'app.
-- L'architecture play/pause/seek/mute/boucle A→B suit le protocole décrit en section 3, avec un index maître unique dans le worklet et un mixage échantillon par échantillon.
-- Le service worker PWA (Workbox via `vite-plugin-pwa`) est configuré pour précacher le shell et exclure l'audio ; un composant `PwaUpdatePrompt` gère la notification de mise à jour.
+- `npx tsc -b` — **passe sans erreur**, y compris après l'ajout de
+  `TrackLoadError` et des champs `loadError`.
+- `npx eslint .` — **passe sans erreur**.
+- Un dossier `dist/` existant sur disque (contenant les FLAC, le service
+  worker `sw.js`, `manifest.webmanifest`) atteste qu'un `npm run build`
+  **a déjà réussi** à une exécution antérieure. Non re-testé dans cette
+  session après les derniers changements.
 
-Ce que je n'ai **pas vérifié en exécution** dans cette session et ne peux donc pas certifier :
-- Que la lecture audio démarre effectivement et reste synchronisée sur un vrai navigateur/appareil (desktop ou iOS).
-- Que le déblocage de l'`AudioContext` fonctionne réellement sur iOS Safari.
-- Que le mixage ne produit pas de clics/glitches en usage réel.
-- Que le service worker s'enregistre et fonctionne correctement une fois déployé (le SW exige HTTPS, non testable en `npm run dev`).
-- Que l'app fonctionne correctement hors-ligne (aucun mécanisme de stockage hors-ligne des pistes n'est implémenté de toute façon, cf. section 4).
+**Non vérifié à l'exécution (à ne pas supposer)** :
 
-Absent, donc non fonctionnel par construction (aucune tentative d'implémentation trouvée) :
-- Authentification et contrôle d'accès (allowlist).
-- Chargement de morceaux depuis Firestore/Storage.
-- Changement de morceau, liste de morceaux.
-- Téléchargement/lecture hors-ligne via IndexedDB.
-- Écran de gestion du stockage.
-- Tout test automatisé (`npm run test` n'existe pas en tant que script, aucune dépendance de test installée, aucun fichier `*.test.*`/`*.spec.*` dans le dépôt).
+- Le comportement réel du moteur audio dans un navigateur (lecture, mute,
+  boucle A→B, synchro échantillon-exacte, affichage du message d'erreur en
+  cas de piste manquante) n'a pas été testé ici — l'analyse ci-dessus est une
+  lecture statique du code, pas une observation d'exécution.
+- Le flux d'authentification (création de compte, connexion, redirections de
+  route) n'a pas été exercé dans un navigateur.
+- Le comportement du service worker / prompt de mise à jour PWA n'a pas été
+  observé en conditions réelles.
+
+**Constat structurel important** (inchangé) : `App.tsx`, qui montait le
+composant `PlaybackPoc` (donc le lecteur audio multipiste), n'est importé par
+aucun autre fichier. Le point d'entrée réel (`main.tsx`) monte le `router`,
+dont la route `"/"` affiche `Home` (liste de morceaux mockée), pas le
+lecteur. **Le POC du moteur audio n'est donc actuellement accessible nulle
+part dans l'application telle que servie.**
+
+Il n'existe aucun test automatisé (§7), donc aucune de ces affirmations
+n'est vérifiable autrement que par lecture du code ou exécution manuelle.
 
 ## 7. Points de blocage
 
-- **Aucune infrastructure Firebase** : sans décision sur le projet Firebase (Auth/Firestore/Storage) et sans règles de sécurité écrites, impossible d'avancer sur la persistance des morceaux, l'allowlist ou le stockage des fichiers audio réels — tout le code actuel dépend de fichiers statiques dans `public/`.
-- **Jeu de test encore limité** : le jeu de pistes FLAC mono actuel (4 pistes, ~8 min 30 s) est conforme au format visé mais reste en deçà du pire cas de la spec (8 pistes, 12 min) ; le budget mémoire au plafond (~500 Mo) et le garde-fou d'estimation avant décodage (toujours absent du code, cf. section 4) n'ont donc pas été mis à l'épreuve dans les conditions extrêmes.
-- **Absence totale de tests automatisés** : `npm run test` est documenté dans CLAUDE.md mais n'existe pas (pas de script, pas de dépendance Vitest). Toute vérification de non-régression sur la synchro est actuellement manuelle.
-- **Gestion d'erreur de chargement absente** : la règle "une piste échouée bloque tout le morceau et signale laquelle" n'est pas implémentée ; ni `AudioEngine.loadTracks` ni `StaticTrackProvider.fetchTrackBytes` n'ont de `try/catch` ou de vérification `response.ok`. Un état d'erreur détaillé par piste reste à écrire avant tout usage au-delà du POC.
-- **Pas de vérification empirique iOS** : la contrainte "iOS doit être correctement supporté" (priorité 2) n'a fait l'objet d'aucun test constaté dans ce dépôt (pas de captures, pas de notes, pas de CI mobile).
+- **Contradiction Auth active** : `CLAUDE.md` interdit désormais explicitement
+  l'inscription publique et exige des comptes créés en console Firebase, mais
+  `Signin.tsx` (formulaire `createUserWithEmailAndPassword`, route `/signin`,
+  lien depuis `LogIn.tsx`) reste présent et pleinement fonctionnel dans le
+  code. C'est la contradiction la plus directe entre doc et code à ce jour.
+- **Aucun test automatisé.** `package.json` ne déclare ni script `test` ni
+  dépendance `vitest` (ou équivalent), alors que `CLAUDE.md` documente
+  toujours `npm run test` (désormais accompagné d'un commentaire HTML
+  signalant l'écart) — la commande **n'existe pas** dans ce dépôt.
+- **Le lecteur audio (cœur du produit) n'est monté nulle part** dans
+  l'application réelle (voir §6) — `App.tsx` est orphelin.
+- **Aucune donnée réelle** : morceaux (`Home.tsx`) et pistes
+  (`useAudioEngine.ts`) sont codés en dur ; Firestore et Storage, censés être
+  la source de vérité selon `CLAUDE.md` (avec le nouveau modèle `tracks`
+  embarqué, `status`, métadonnées audio), ne sont branchés nulle part dans le
+  code.
+- **Wizard d'import et validations associées absents** : ni décodage local
+  avant upload, ni rejet des pistes hors fréquence/durée, ni champ `status`,
+  ni métadonnées audio (sampleRate, sizeBytes, contentHash) persistées.
+- **Aucune règle de sécurité Firestore/Storage** n'existe dans le dépôt — mais
+  comme Firestore/Storage eux-mêmes ne sont pas encore utilisés côté client,
+  ce point est actuellement sans conséquence pratique ; il deviendra bloquant
+  dès que ces services seront branchés.
+- **Aucune brique hors-ligne** (IndexedDB, écran de gestion du stockage,
+  `navigator.storage.persist()`) — le hors-ligne est documenté comme
+  secondaire dans `CLAUDE.md`, cohérent avec son absence actuelle, mais il est
+  entièrement à construire.
+- **Estimation mémoire absente**, y compris la nouvelle exigence de la
+  calculer à partir des seules métadonnées Firestore — non bloquant tant que
+  les morceaux testés restent petits, mais aucun garde-fou n'existe contre le
+  cas extrême documenté (~500 Mo, iOS tue l'onglet sans erreur).
+
+**Résolu depuis la précédente génération** : la gestion d'erreur de
+chargement de piste identifie désormais la piste fautive (`TrackLoadError`),
+conformément à `.claude/rules/audio-engine.md` — ce n'est plus un point de
+blocage.

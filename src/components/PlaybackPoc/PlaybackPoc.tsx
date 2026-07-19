@@ -17,6 +17,7 @@ function formatTime(samples: number): string {
 export function PlaybackPoc() {
   const {
     status,
+    loadError,
     isPlaying,
     togglePlayPause,
     tracks,
@@ -42,6 +43,10 @@ export function PlaybackPoc() {
       <button type="button" onClick={togglePlayPause} disabled={status !== "ready"}>
         {playLabel}
       </button>
+
+      {status === "error" && loadError && (
+        <p className="load-error">{loadError}</p>
+      )}
 
       <div className="seek-bar">
         <span>{formatTime(position)}</span>

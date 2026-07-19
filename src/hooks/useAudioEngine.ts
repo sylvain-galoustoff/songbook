@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { AudioEngine, type LoopRange, type TrackSource } from "../audio/audioEngine";
+import {
+  AudioEngine,
+  TrackLoadError,
+  type LoopRange,
+  type TrackSource,
+} from "../audio/audioEngine";
 import { StaticTrackProvider, type TrackRequest } from "../audio/trackProvider";
 
 const TRACK_REQUESTS: TrackRequest[] = [
@@ -15,6 +20,7 @@ export function useAudioEngine() {
   const engineRef = useRef<AudioEngine | null>(null);
   const providerRef = useRef(new StaticTrackProvider());
   const [status, setStatus] = useState<PlaybackStatus>("loading");
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [mutedTracks, setMutedTracks] = useState<Record<string, boolean>>({});
   const [position, setPosition] = useState(0);
@@ -48,8 +54,15 @@ export function useAudioEngine() {
           setDuration(engine.getDurationSamples());
         }
       })
-      .catch(() => {
-        if (!cancelled) setStatus("error");
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setLoadError(
+            error instanceof TrackLoadError
+              ? error.message
+              : "Erreur de chargement.",
+          );
+          setStatus("error");
+        }
       });
 
     return () => {
@@ -105,6 +118,7 @@ export function useAudioEngine() {
 
   return {
     status,
+    loadError,
     isPlaying,
     togglePlayPause,
     tracks,

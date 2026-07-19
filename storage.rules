@@ -1,0 +1,17 @@
+rules_version = '2';
+
+// Accès réservé aux comptes authentifiés, créés manuellement en console
+// Firebase (pas d'allowlist, pas de rôles, pas de distinction propriétaire —
+// cf. CLAUDE.md, section « Auth »).
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /songs/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Tout le reste est refusé explicitement.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

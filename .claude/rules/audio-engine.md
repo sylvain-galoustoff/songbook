@@ -45,9 +45,10 @@ reste s'y subordonne.
 Thread principal → worklet :
 
 - `loadTracks` : buffers Int16 + méta par piste (channels, longueur, sampleRate)
-- `play` / `pause` / `stop`
+- `play` / `pause`
 - `seek` : index d'échantillon cible
-- `setLoop` : indices A et B / `clearLoop`
+- `toggleLoopPoint` : sans paramètre. Toute la logique de pose des points A/B
+  est décidée côté worklet, pas par le thread principal (cf. « Boucle A→B »).
 - `setTrackGain` : trackId + gain (mute = 0)
 
 Worklet → thread principal :
@@ -55,6 +56,10 @@ Worklet → thread principal :
 - `position` : index de lecture courant, émis de façon **throttlée** (ex. tous les
   N blocs) pour la tête de lecture et la barre de progression. L'UI NE calcule PAS
   la position ; elle la reçoit du worklet.
+- `loop` : indices A/B courants (`start`/`end`, chacun `number | null`), émis à
+  chaque changement d'état de la boucle. L'UI affiche l'état de la boucle
+  exclusivement à partir de ce message ; elle ne déduit ni ne présume jamais
+  l'état A/B elle-même (cf. « Boucle A→B »).
 
 ## Lecture & position
 
@@ -73,10 +78,15 @@ Worklet → thread principal :
 
 ## Boucle A→B
 
-- `loopStart` / `loopEnd` en indices d'échantillon. Quand l'index maître atteint
-  `loopEnd`, il repart à `loopStart`. Sample-exact.
+- `loopStart` / `loopEnd` en indices d'échantillon, maintenus côté worklet.
+  Quand l'index maître atteint `loopEnd`, il repart à `loopStart`. Sample-exact.
+- **Un seul contrôle, `toggleLoopPoint`, 3 états** : rien défini → pose A ;
+  A défini → pose B (active la boucle) ; A+B définis → efface les deux. Pas de
+  commandes A et B séparées côté protocole ; c'est le worklet qui interprète
+  chaque appel selon l'état courant.
 - Décisions de comportement (figées) :
-  - Poser B DERRIÈRE la tête de lecture → saut immédiat à A (= un seek).
+  - Poser B DERRIÈRE (ou sur) la tête de lecture → n'enregistre pas B, saut
+    immédiat à A (= un seek) ; l'utilisateur re-pose B depuis là.
   - `seek` EN DEHORS de [A,B] pendant une boucle active → effacer A/B et sortir du
     mode boucle.
 - Micro-fondu optionnel au raccord (loopEnd→loopStart) pour supprimer un éventuel

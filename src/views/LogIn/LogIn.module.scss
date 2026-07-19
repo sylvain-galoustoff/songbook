@@ -33,18 +33,3 @@
   font-size: 16px;
   color: var(--secondary);
 }
-
-.signUp {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-  max-width: 361px;
-}
-
-.signUpLabel {
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: 24px;
-  color: var(--white);
-}

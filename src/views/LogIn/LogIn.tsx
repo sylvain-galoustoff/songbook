@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { IoCheckmarkDone, IoAddCircle } from "react-icons/io5";
+import { IoCheckmarkDone } from "react-icons/io5";
 import { auth } from "../../firebase/config";
 import { Header } from "../../components/Header/Header";
 import { TextField } from "../../components/TextField/TextField";
@@ -62,12 +62,6 @@ const LogIn = () => {
             Valider
           </Button>
         </form>
-        <div className={styles.signUp}>
-          <p className={styles.signUpLabel}>Pas de compte ?</p>
-          <Button to="/signin" variant="secondary" icon={<IoAddCircle size={24} />}>
-            Inscrivez-vous
-          </Button>
-        </div>
       </div>
     </div>
   );

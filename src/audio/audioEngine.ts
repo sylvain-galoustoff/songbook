@@ -23,6 +23,22 @@ export interface LoopRange {
   end: number | null;
 }
 
+// Erreur de chargement identifiant la piste fautive : une piste manquante ou
+// indécodable bloque tout le morceau (cf. audio-engine.md), mais l'appelant
+// doit pouvoir dire laquelle a échoué plutôt qu'un échec générique.
+export class TrackLoadError extends Error {
+  readonly trackId: string;
+  readonly instrument: string;
+
+  constructor(source: TrackRequest, cause: unknown) {
+    super(`Échec du chargement de la piste "${source.instrument}".`);
+    this.name = "TrackLoadError";
+    this.trackId = source.id;
+    this.instrument = source.instrument;
+    this.cause = cause;
+  }
+}
+
 // Moteur audio : un seul AudioContext + un seul AudioWorkletNode qui mixe
 // toutes les pistes. Voir .claude/rules/audio-engine.md.
 export class AudioEngine {
@@ -77,7 +93,13 @@ export class AudioEngine {
     await this.workletReady;
 
     const arrayBuffers = await Promise.all(
-      sources.map((source) => provider.fetchTrackBytes(source)),
+      sources.map(async (source) => {
+        try {
+          return await provider.fetchTrackBytes(source);
+        } catch (error) {
+          throw new TrackLoadError(source, error);
+        }
+      }),
     );
 
     const tracks: TrackPayload[] = [];
@@ -87,7 +109,12 @@ export class AudioEngine {
     // Décodage séquentiel : décoder toutes les pistes en parallèle ferait
     // coexister N buffers Float32 en RAM en même temps (pic mémoire à éviter).
     for (let i = 0; i < sources.length; i++) {
-      const audioBuffer = await this.context.decodeAudioData(arrayBuffers[i]);
+      let audioBuffer: AudioBuffer;
+      try {
+        audioBuffer = await this.context.decodeAudioData(arrayBuffers[i]);
+      } catch (error) {
+        throw new TrackLoadError(sources[i], error);
+      }
       const channels: ArrayBuffer[] = [];
       for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
         const buffer = float32ToInt16(audioBuffer.getChannelData(channel))
