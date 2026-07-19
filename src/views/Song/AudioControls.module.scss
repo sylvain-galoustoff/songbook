@@ -24,6 +24,11 @@
   background: var(--primary);
   color: var(--white);
   cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 .transportRow {
@@ -45,6 +50,11 @@
   color: var(--white);
   cursor: pointer;
   box-sizing: border-box;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 .playButton {
@@ -59,6 +69,11 @@
   color: var(--white);
   cursor: pointer;
   box-sizing: border-box;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 .progress {

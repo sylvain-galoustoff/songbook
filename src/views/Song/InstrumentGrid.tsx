@@ -1,27 +1,20 @@
 import type { CSSProperties } from "react";
-import type { InstrumentId } from "../../types/instrument";
+import type { TrackSource } from "../../audio/audioEngine";
 import styles from "./InstrumentGrid.module.scss";
 
 type GlyphStyle = CSSProperties & { "--icon-src": string };
 
-// Maquette Figma (node 17:597) : 6 emplacements fixes. Sera remplacé par les
-// pistes réelles du morceau quand le câblage sera fait.
-const PLACEHOLDER_INSTRUMENTS: InstrumentId[] = [
-  "drums",
-  "bass",
-  "guitar",
-  "keyboard",
-  "vocals",
-  "vocals",
-];
+interface InstrumentGridProps {
+  tracks: TrackSource[];
+}
 
-export const InstrumentGrid = () => {
+export const InstrumentGrid = ({ tracks }: InstrumentGridProps) => {
   return (
     <div className={styles.InstrumentGrid}>
-      {PLACEHOLDER_INSTRUMENTS.map((instrumentId, index) => {
-        const glyphStyle: GlyphStyle = { "--icon-src": `url(/instruments/${instrumentId}.svg)` };
+      {tracks.map((track) => {
+        const glyphStyle: GlyphStyle = { "--icon-src": `url(/instruments/${track.instrument}.svg)` };
         return (
-          <button key={index} type="button" className={styles.cell}>
+          <button key={track.id} type="button" className={styles.cell} aria-label={track.instrument}>
             <span className={styles.glyph} style={glyphStyle} />
           </button>
         );
