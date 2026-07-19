@@ -2,6 +2,7 @@ import { createBrowserRouter, Outlet } from "react-router";
 import Home from "../views/Home/Home.tsx";
 import LogIn from "../views/LogIn/LogIn.tsx";
 import SongName from "../views/NewSong/SongName/SongName.tsx";
+import SelectTrack from "../views/NewSong/SelectTrack/SelectTrack.tsx";
 import { ProtectedRoute } from "./ProtectedRoute.tsx";
 import { PublicOnlyRoute } from "./PublicOnlyRoute.tsx";
 import { NewSongWizardProvider } from "../hooks/NewSongWizardProvider.tsx";
@@ -32,6 +33,9 @@ export const router = createBrowserRouter([
         </NewSongWizardProvider>
       </ProtectedRoute>
     ),
-    children: [{ path: "song-name", element: <SongName /> }],
+    children: [
+      { path: "song-name", element: <SongName /> },
+      { path: "select-track", element: <SelectTrack /> },
+    ],
   },
 ]);

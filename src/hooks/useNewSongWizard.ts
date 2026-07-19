@@ -3,6 +3,8 @@ import { createContext, useContext } from "react";
 export interface NewSongWizardState {
   songTitle: string;
   setSongTitle: (title: string) => void;
+  trackFile: File | null;
+  setTrackFile: (file: File | null) => void;
 }
 
 export const NewSongWizardContext = createContext<NewSongWizardState | null>(null);
