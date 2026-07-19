@@ -8,14 +8,18 @@
   padding: 24px 32px;
   background: var(--primary);
   box-sizing: border-box;
+  text-decoration: none;
+  color: inherit;
+}
 
-  &:first-child {
-    border-radius: var(--corner) var(--corner) 0 0;
-  }
+.item:first-child .SongCard {
+  border-top-left-radius: var(--corner);
+  border-top-right-radius: var(--corner);
+}
 
-  &:last-child {
-    border-radius: 0 0 var(--corner) var(--corner);
-  }
+.item:last-child .SongCard {
+  border-bottom-left-radius: var(--corner);
+  border-bottom-right-radius: var(--corner);
 }
 
 .title {
