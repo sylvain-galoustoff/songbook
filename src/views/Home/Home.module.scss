@@ -3,8 +3,15 @@
 .Home {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 16px;
-  padding: 16px;
+  min-height: 100vh;
+  background: var(--background);
 }
 
+.body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 0;
+  gap: 32px;
+  padding: 16px;
+  box-sizing: border-box;
+}
