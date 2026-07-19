@@ -28,7 +28,7 @@ const Home = () => {
       />
       <div className={styles.body}>
         <SongList songs={mockSongs} />
-        <Button variant="primary" icon={<IoAddCircle size={24} />}>
+        <Button variant="primary" icon={<IoAddCircle size={24} />} to="/new-song/song-name">
           Ajouter une compo
         </Button>
       </div>
