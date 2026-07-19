@@ -114,3 +114,4 @@ Firestore/Storage** (ne jamais faire confiance au seul contrôle front).
 - Ne pas utiliser de streaming audio (casse la boucle A→B et la synchro).
 - Ne pas precacher les fichiers audio dans le service worker.
 - Ne pas remplacer la stack imposée ni ajouter de dépendance lourde sans demander.
+- Ne jamais écrire dans Figma. Le MCP Figma est en LECTURE seule : aucune création ni modification de nœud, variable ou composant. La maquette fait foi, jamais l'inverse.
