@@ -6,3 +6,27 @@
   min-height: 100vh;
   background: var(--background);
 }
+
+.body {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  min-height: 0;
+  padding: 32px;
+  background: var(--background);
+  box-sizing: border-box;
+}
+
+.notice {
+  flex: 1 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 20px;
+  line-height: 1.4;
+  color: var(--white);
+}

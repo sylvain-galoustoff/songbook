@@ -3,7 +3,7 @@ import styles from "./Header.module.scss";
 
 interface HeaderProps {
   title?: string;
-  subtitle: string;
+  subtitle?: string;
   onBack?: () => void;
   onLogout?: () => void;
 }
@@ -24,7 +24,7 @@ export const Header = ({ title = "SongBook", subtitle, onBack, onLogout }: Heade
       <span className={styles.divider} aria-hidden="true" />
       <div className={styles.text}>
         <p className={styles.title}>{title}</p>
-        <p className={styles.subtitle}>{subtitle}</p>
+        {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
       </div>
       {onLogout && (
         <button
