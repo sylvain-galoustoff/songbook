@@ -4,10 +4,13 @@ import { RouterProvider } from "react-router";
 import "./styles/index.scss";
 import { router } from "./router";
 import { PwaUpdatePrompt } from "./components/PwaUpdatePrompt/PwaUpdatePrompt";
+import { AuthProvider } from "./hooks/AuthProvider";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
-    <PwaUpdatePrompt />
+    <AuthProvider>
+      <RouterProvider router={router} />
+      <PwaUpdatePrompt />
+    </AuthProvider>
   </StrictMode>,
 );

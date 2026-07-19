@@ -1,0 +1,12 @@
+:root {
+  --primary: #304878;
+  --secondary: #dc3c64;
+  --white: #fff;
+  --background: #1a384c;
+  --textDisabled: #adaac5;
+
+  --corner: 12px;
+
+  --font-heading: "Alegreya Sans", sans-serif;
+  --font-body: "Work Sans", sans-serif;
+}

@@ -1,0 +1,50 @@
+@use "../../styles/tokens.css";
+
+.Signin {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--background);
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  width: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.form {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+  max-width: 361px;
+}
+
+.error {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--secondary);
+}
+
+.logIn {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 361px;
+}
+
+.logInLabel {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 24px;
+  color: var(--white);
+}

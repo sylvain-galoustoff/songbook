@@ -1,9 +1,29 @@
 import { createBrowserRouter } from "react-router";
-import App from "../App.tsx";
+import Home from "../views/Home/Home.tsx";
+import LogIn from "../views/LogIn/LogIn.tsx";
+import Signin from "../views/Signin/Signin.tsx";
+import { ProtectedRoute } from "./ProtectedRoute.tsx";
+import { PublicOnlyRoute } from "./PublicOnlyRoute.tsx";
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: (
+      <ProtectedRoute>
+        <Home />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/login",
+    element: (
+      <PublicOnlyRoute>
+        <LogIn />
+      </PublicOnlyRoute>
+    ),
+  },
+  {
+    path: "/signin",
+    element: <Signin />,
   },
 ]);

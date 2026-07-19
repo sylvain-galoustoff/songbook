@@ -1,0 +1,47 @@
+@use "../../styles/tokens.css";
+
+.TextField {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.label {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 24px;
+  color: var(--white);
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 16px;
+  background: var(--white);
+  border-radius: var(--corner);
+  box-sizing: border-box;
+}
+
+.icon {
+  flex-shrink: 0;
+  color: var(--secondary);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 20px;
+  color: var(--primary);
+
+  &::placeholder {
+    color: var(--textDisabled);
+  }
+}
