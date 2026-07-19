@@ -10,7 +10,7 @@ import styles from "./SelectInstrument.module.scss";
 
 const SelectInstrument = () => {
   const navigate = useNavigate();
-  const { songTitle, trackInstrument, setTrackInstrument } = useNewSongWizard();
+  const { songTitle, trackInstrument, setTrackInstrument, confirmTrack } = useNewSongWizard();
 
   return (
     <div className={styles.SelectInstrument}>
@@ -52,6 +52,10 @@ const SelectInstrument = () => {
           trailingIcon
           icon={<IoArrowForward size={24} />}
           disabled={!trackInstrument}
+          onClick={() => {
+            confirmTrack();
+            navigate("/recap");
+          }}
         >
           Suite
         </Button>
