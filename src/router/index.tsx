@@ -1,5 +1,6 @@
 import { createBrowserRouter, Outlet } from "react-router";
 import Home from "../views/Home/Home.tsx";
+import Song from "../views/Song/Song.tsx";
 import LogIn from "../views/LogIn/LogIn.tsx";
 import SongName from "../views/NewSong/SongName/SongName.tsx";
 import SelectTrack from "../views/NewSong/SelectTrack/SelectTrack.tsx";
@@ -15,6 +16,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <Home />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/song/:id",
+    element: (
+      <ProtectedRoute>
+        <Song />
       </ProtectedRoute>
     ),
   },
