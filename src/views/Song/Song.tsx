@@ -14,10 +14,14 @@ import styles from "./Song.module.scss";
 // render tant qu'aucun morceau jouable n'est encore connu (cf. useAudioEngine).
 const EMPTY_TRACKS: TrackMeta[] = [];
 
-// Le fun (ces messages) et le réel (la barre de progression, cf. plus bas)
-// sont volontairement découplés : les messages tournent sur une simple
-// horloge de 3 s, la progression affichée vient, elle, exclusivement de
-// useAudioEngine (nombre de pistes effectivement reçues).
+// Le fun (ces messages) et le réel (la barre de progression) sont
+// volontairement découplés : les messages tournent sur une simple horloge de
+// 3 s, la progression affichée vient, elle, exclusivement de useAudioEngine.
+// Une seule instance de <Loader> vit sur toute la séquence de chargement
+// (recherche du morceau → téléchargement → décodage) : ne jamais la démonter
+// pour changer de message/barre, sous peine de sautillement des éléments
+// autour (cf. retour utilisateur) — seuls le message et la valeur de
+// progression affichés changent d'une phase à l'autre.
 const MESSAGE_INTERVAL_MS = 3000;
 
 const SONG_FLAVORS = [
@@ -71,26 +75,21 @@ const Song = () => {
   const headerTitle = loading ? "Chargement…" : (song?.title ?? "Morceau introuvable");
   const progress = player.duration > 0 ? player.position / player.duration : 0;
   const audioLoading = player.status === "idle" || player.status === "loading";
-  const decoding = player.loadProgress?.phase === "decoding";
+  const showLoader = loading || audioLoading;
 
-  const songMessage = useRotatingMessage(SONG_FLAVORS, MESSAGE_INTERVAL_MS, loading);
-  const fetchMessage = useRotatingMessage(
-    FETCH_FLAVORS,
-    MESSAGE_INTERVAL_MS,
-    audioLoading && !decoding,
-  );
-  const decodeMessage = useRotatingMessage(DECODE_FLAVORS, MESSAGE_INTERVAL_MS, decoding);
-
-  const fetchProgress =
-    player.loadProgress?.phase === "fetching" && player.loadProgress.total > 0
+  const fetching = audioLoading && player.loadProgress?.phase === "fetching";
+  const loaderFlavors = loading ? SONG_FLAVORS : fetching ? FETCH_FLAVORS : DECODE_FLAVORS;
+  const loaderMessage = useRotatingMessage(loaderFlavors, MESSAGE_INTERVAL_MS, showLoader);
+  const loaderProgress =
+    fetching && player.loadProgress?.phase === "fetching" && player.loadProgress.total > 0
       ? player.loadProgress.loaded / player.loadProgress.total
-      : 0;
+      : undefined;
 
   return (
     <div className={styles.Song}>
       <Header title={headerTitle} onBack={() => navigate("/")} />
       <div className={styles.body}>
-        {loading && <Loader message={songMessage} />}
+        {showLoader && <Loader message={loaderMessage} progress={loaderProgress} />}
         {!loading && !song && <p className={styles.notice}>Morceau introuvable.</p>}
         {!loading && song && !playableSong && (
           <p className={styles.notice}>Ce morceau n’est pas encore disponible.</p>
@@ -98,10 +97,6 @@ const Song = () => {
         {playableSong && player.status === "error" && (
           <p className={styles.notice}>{player.loadError}</p>
         )}
-        {playableSong && audioLoading && !decoding && (
-          <Loader message={fetchMessage} progress={fetchProgress} />
-        )}
-        {playableSong && audioLoading && decoding && <Loader message={decodeMessage} />}
         {playableSong && player.status === "ready" && (
           <>
             <InstrumentGrid
