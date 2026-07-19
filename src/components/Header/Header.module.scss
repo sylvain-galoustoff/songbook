@@ -37,3 +37,16 @@
   font-size: 20px;
   line-height: 1;
 }
+
+.logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--white);
+  cursor: pointer;
+}
