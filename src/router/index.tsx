@@ -27,6 +27,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    path: "/new-song",
     element: (
       <ProtectedRoute>
         <NewSongWizardProvider>
@@ -35,9 +36,9 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { path: "new-song/song-name", element: <SongName /> },
-      { path: "new-song/select-track", element: <SelectTrack /> },
-      { path: "new-song/select-instrument", element: <SelectInstrument /> },
+      { path: "song-name", element: <SongName /> },
+      { path: "select-track", element: <SelectTrack /> },
+      { path: "select-instrument", element: <SelectInstrument /> },
       { path: "recap", element: <Recap /> },
     ],
   },

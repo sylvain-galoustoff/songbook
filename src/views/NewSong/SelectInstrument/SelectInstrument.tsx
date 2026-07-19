@@ -54,7 +54,7 @@ const SelectInstrument = () => {
           disabled={!trackInstrument}
           onClick={() => {
             confirmTrack();
-            navigate("/recap");
+            navigate("/new-song/recap");
           }}
         >
           Suite
