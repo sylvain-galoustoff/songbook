@@ -5,9 +5,9 @@ import { auth } from "../../firebase/config";
 import { Header } from "../../components/Header/Header";
 import { TextField } from "../../components/TextField/TextField";
 import { Button } from "../../components/Button/Button";
-import styles from "./SignIn.module.scss";
+import styles from "./LogIn.module.scss";
 
-const SignIn = () => {
+const LogIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +28,7 @@ const SignIn = () => {
   };
 
   return (
-    <div className={styles.SignIn}>
+    <div className={styles.LogIn}>
       <Header subtitle="Connexion" />
       <div className={styles.body}>
         <form className={styles.form} onSubmit={handleSubmit}>
@@ -73,4 +73,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default LogIn;
