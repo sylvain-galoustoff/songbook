@@ -1,0 +1,39 @@
+@use "../../styles/tokens.css";
+
+.Header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 48px 16px 32px;
+  background: var(--primary);
+  box-sizing: border-box;
+}
+
+.divider {
+  align-self: stretch;
+  width: 2px;
+  background: var(--white);
+  border-radius: 1px;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--white);
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 32px;
+  line-height: 1;
+}
+
+.subtitle {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1;
+}
