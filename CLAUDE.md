@@ -26,11 +26,13 @@ Projet personnel, pour l'usage du groupe uniquement. Sans lien avec les projets 
   <!-- Inexact en l'état : aucun script `test` ni dépendance Vitest n'existe
        dans package.json (constaté dans docs/etat-des-lieux.md). À installer,
        ou à retirer d'ici si les tests ne sont pas mis en place prochainement. -->
-  <!-- Règles Firebase (firestore.rules, storage.rules, firebase.json) écrites
-       mais non testées ni déployées. Ne pas exécuter sans validation
-       explicite de ma part :
-       firebase emulators:start --only firestore,storage
-       firebase deploy --only firestore:rules,storage:rules -->
+  <!-- Règles Firebase (firestore.rules, storage.rules) déployées sur le
+       projet songbook-97910 (alias "default" dans .firebaserc). Pour
+       redéployer après modification, toujours avec validation explicite :
+       firebase deploy --only firestore:rules
+       firebase deploy --only storage
+       (le combiné --only firestore:rules,storage:rules a échoué en pratique
+       — cible "storage:rules" introuvable ; déployer les deux séparément.) -->
 
 ## Stack (NON NÉGOCIABLE)
 

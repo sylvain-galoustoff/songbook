@@ -1,0 +1,50 @@
+@use "../../../styles/tokens.css";
+
+.SelectTrack {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--background);
+}
+
+.body {
+  display: flex;
+  flex: 1 0 0;
+  flex-direction: column;
+  gap: 32px;
+  padding: 32px;
+  box-sizing: border-box;
+}
+
+.form {
+  display: flex;
+  flex: 1 0 0;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.label {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 24px;
+  color: var(--white);
+}
+
+.fileInput {
+  display: none;
+}
+
+.error {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--secondary);
+  margin: 0;
+}

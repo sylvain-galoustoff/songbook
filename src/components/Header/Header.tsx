@@ -1,15 +1,26 @@
-import { IoPower } from "react-icons/io5";
+import { IoArrowBack, IoPower } from "react-icons/io5";
 import styles from "./Header.module.scss";
 
 interface HeaderProps {
   title?: string;
   subtitle: string;
+  onBack?: () => void;
   onLogout?: () => void;
 }
 
-export const Header = ({ title = "SongBook", subtitle, onLogout }: HeaderProps) => {
+export const Header = ({ title = "SongBook", subtitle, onBack, onLogout }: HeaderProps) => {
   return (
     <header className={styles.Header}>
+      {onBack && (
+        <button
+          type="button"
+          className={styles.back}
+          onClick={onBack}
+          aria-label="Retour"
+        >
+          <IoArrowBack size={24} />
+        </button>
+      )}
       <span className={styles.divider} aria-hidden="true" />
       <div className={styles.text}>
         <p className={styles.title}>{title}</p>
