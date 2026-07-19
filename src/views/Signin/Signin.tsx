@@ -1,13 +1,16 @@
 import { useState, type FormEvent } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { useNavigate } from "react-router";
 import { IoCheckmarkDone, IoAddCircle } from "react-icons/io5";
 import { auth } from "../../firebase/config";
 import { Header } from "../../components/Header/Header";
 import { TextField } from "../../components/TextField/TextField";
 import { Button } from "../../components/Button/Button";
-import styles from "./LogIn.module.scss";
+import styles from "./Signin.module.scss";
 
-const LogIn = () => {
+const Signin = () => {
+  const navigate = useNavigate();
+  const [pseudo, setPseudo] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -19,19 +22,35 @@ const LogIn = () => {
     setSubmitting(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const { user } = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+      await updateProfile(user, { displayName: pseudo });
+      navigate("/");
     } catch {
-      setError("Email ou mot de passe incorrect.");
+      setError("Impossible de créer le compte.");
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className={styles.LogIn}>
-      <Header subtitle="Connexion" />
+    <div className={styles.Signin}>
+      <Header subtitle="Inscription" />
       <div className={styles.body}>
         <form className={styles.form} onSubmit={handleSubmit}>
+          <TextField
+            id="pseudo"
+            label="Votre pseudo"
+            type="text"
+            placeholder="Choisissez un pseudo"
+            autoComplete="nickname"
+            value={pseudo}
+            onChange={(event) => setPseudo(event.target.value)}
+            required
+          />
           <TextField
             id="email"
             label="Votre email"
@@ -47,7 +66,7 @@ const LogIn = () => {
             label="Votre mot de passe"
             type="password"
             placeholder="••••••••"
-            autoComplete="current-password"
+            autoComplete="new-password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             required
@@ -62,10 +81,10 @@ const LogIn = () => {
             Valider
           </Button>
         </form>
-        <div className={styles.signUp}>
-          <p className={styles.signUpLabel}>Pas de compte ?</p>
-          <Button to="/signin" variant="secondary" icon={<IoAddCircle size={24} />}>
-            Inscrivez-vous
+        <div className={styles.logIn}>
+          <p className={styles.logInLabel}>Déjà inscrit ?</p>
+          <Button to="/login" variant="secondary" icon={<IoAddCircle size={24} />}>
+            Connectez-vous
           </Button>
         </div>
       </div>
@@ -73,4 +92,4 @@ const LogIn = () => {
   );
 };
 
-export default LogIn;
+export default Signin;
