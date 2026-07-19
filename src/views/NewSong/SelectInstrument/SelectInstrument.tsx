@@ -4,6 +4,7 @@ import { IoArrowForward } from "react-icons/io5";
 import { auth } from "../../../firebase/config";
 import { Header } from "../../../components/Header/Header";
 import { Button } from "../../../components/Button/Button";
+import { InstrumentIcon } from "../../../components/InstrumentIcon/InstrumentIcon";
 import { useNewSongWizard } from "../../../hooks/useNewSongWizard";
 import { INSTRUMENTS } from "../../../types/instrument";
 import styles from "./SelectInstrument.module.scss";
@@ -36,9 +37,7 @@ const SelectInstrument = () => {
                       onClick={() => setTrackInstrument(instrument.id)}
                       aria-pressed={selected}
                     >
-                      <span className={styles.icon}>
-                        <img src={`/instruments/${instrument.id}.svg`} alt="" />
-                      </span>
+                      <InstrumentIcon instrumentId={instrument.id} />
                       <span className={styles.instrumentLabel}>{instrument.label}</span>
                     </button>
                   </li>

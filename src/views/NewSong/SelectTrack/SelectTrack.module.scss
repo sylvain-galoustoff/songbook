@@ -41,3 +41,10 @@
 .fileInput {
   display: none;
 }
+
+.error {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--secondary);
+  margin: 0;
+}

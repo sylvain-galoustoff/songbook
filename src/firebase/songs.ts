@@ -125,6 +125,14 @@ export async function listReadySongs(): Promise<SongRecord[]> {
   return snapshot.docs.map(songFromSnapshot);
 }
 
+// Position d'insertion pour un nouveau morceau : approximation simple par
+// le nombre de morceaux existants (tous statuts confondus), suffisante tant
+// qu'il n'y a pas de réordonnancement manuel dans l'app.
+export async function getNextSongOrder(): Promise<number> {
+  const snapshot = await getDocs(collection(firestore, SONGS_COLLECTION));
+  return snapshot.size;
+}
+
 export async function getSong(songId: string): Promise<SongRecord | null> {
   const snapshot = await getDoc(doc(firestore, SONGS_COLLECTION, songId));
   if (!snapshot.exists()) return null;
