@@ -11,9 +11,11 @@ const MAX_ROWS = 5;
 
 interface InstrumentGridProps {
   tracks: TrackSource[];
+  mutedTracks: Record<string, boolean>;
+  onToggleMute: (id: string) => void;
 }
 
-export const InstrumentGrid = ({ tracks }: InstrumentGridProps) => {
+export const InstrumentGrid = ({ tracks, mutedTracks, onToggleMute }: InstrumentGridProps) => {
   const rows = Math.min(MAX_ROWS, Math.max(1, Math.ceil(tracks.length / COLUMNS)));
   // Cases vides pour compléter la dernière rangée : sans icône, non
   // cliquables (juste un remplissage visuel, cf. la grille "morceau" de la
@@ -25,8 +27,17 @@ export const InstrumentGrid = ({ tracks }: InstrumentGridProps) => {
     <div className={styles.InstrumentGrid} style={gridStyle}>
       {tracks.map((track) => {
         const glyphStyle: GlyphStyle = { "--icon-src": `url(/instruments/${track.instrument}.svg)` };
+        const muted = mutedTracks[track.id] ?? false;
+        const cellClassName = muted ? `${styles.cell} ${styles.muted}` : styles.cell;
         return (
-          <button key={track.id} type="button" className={styles.cell} aria-label={track.instrument}>
+          <button
+            key={track.id}
+            type="button"
+            className={cellClassName}
+            aria-label={muted ? `Réactiver la piste ${track.instrument}` : `Couper la piste ${track.instrument}`}
+            aria-pressed={muted}
+            onClick={() => onToggleMute(track.id)}
+          >
             <span className={styles.glyph} style={glyphStyle} />
           </button>
         );

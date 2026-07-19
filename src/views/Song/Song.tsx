@@ -104,7 +104,11 @@ const Song = () => {
         {playableSong && audioLoading && decoding && <Loader message={decodeMessage} />}
         {playableSong && player.status === "ready" && (
           <>
-            <InstrumentGrid tracks={player.tracks} />
+            <InstrumentGrid
+              tracks={player.tracks}
+              mutedTracks={player.mutedTracks}
+              onToggleMute={player.toggleTrackMute}
+            />
             <AudioControls
               isPlaying={player.isPlaying}
               disabled={false}
