@@ -2,8 +2,13 @@
 
 .InstrumentGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(2, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  // Nombre de rangées piloté depuis le composant (--grid-rows), de 1 à 5
+  // selon le nombre de pistes (jusqu'à 15). minmax(0, …) plutôt que 1fr nu :
+  // sans ça, une rangée ne peut pas rétrécir sous la taille min. de son
+  // contenu, ce qui casserait la contrainte "toujours occuper uniquement
+  // l'espace nécessaire" quand il y a beaucoup de pistes.
+  grid-template-rows: repeat(var(--grid-rows), minmax(0, 1fr));
   gap: 2px;
   width: 100%;
   flex: 1 1 0;
@@ -13,19 +18,33 @@
 }
 
 .cell {
+  // Permet aux unités cqmin ci-dessous (icône, padding) de se baser sur la
+  // taille réelle de la case, qui varie avec le nombre de rangées.
+  container-type: size;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  min-width: 0;
+  min-height: 0;
+  padding: min(16px, 12cqmin);
   border: none;
   background: var(--primary);
   cursor: pointer;
   box-sizing: border-box;
 }
 
+.placeholder {
+  min-width: 0;
+  min-height: 0;
+  background: var(--primary);
+  box-sizing: border-box;
+}
+
 .glyph {
-  width: 48px;
-  height: 48px;
+  // Plafonné à 48px (taille de la maquette), mais rétrécit si la case
+  // devient plus petite (grille à 4-5 rangées) plutôt que de déborder.
+  width: min(48px, 55cqmin);
+  height: min(48px, 55cqmin);
   flex-shrink: 0;
   background-color: var(--white);
   mask-image: var(--icon-src);
