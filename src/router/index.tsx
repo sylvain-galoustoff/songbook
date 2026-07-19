@@ -3,6 +3,7 @@ import Home from "../views/Home/Home.tsx";
 import LogIn from "../views/LogIn/LogIn.tsx";
 import SongName from "../views/NewSong/SongName/SongName.tsx";
 import SelectTrack from "../views/NewSong/SelectTrack/SelectTrack.tsx";
+import SelectInstrument from "../views/NewSong/SelectInstrument/SelectInstrument.tsx";
 import { ProtectedRoute } from "./ProtectedRoute.tsx";
 import { PublicOnlyRoute } from "./PublicOnlyRoute.tsx";
 import { NewSongWizardProvider } from "../hooks/NewSongWizardProvider.tsx";
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
     children: [
       { path: "song-name", element: <SongName /> },
       { path: "select-track", element: <SelectTrack /> },
+      { path: "select-instrument", element: <SelectInstrument /> },
     ],
   },
 ]);

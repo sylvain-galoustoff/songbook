@@ -50,6 +50,7 @@ const SelectTrack = () => {
           trailingIcon
           icon={<IoArrowForward size={24} />}
           disabled={!trackFile}
+          onClick={() => navigate("/new-song/select-instrument")}
         >
           Attribuer l’instrument
         </Button>
