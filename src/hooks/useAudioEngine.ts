@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AudioEngine,
   TrackLoadError,
+  type LoadProgress,
   type LoopRange,
   type TrackSource,
 } from "../audio/audioEngine";
@@ -32,6 +33,7 @@ export function useAudioEngine(songId: string | null, trackMetas: TrackMeta[]) {
   const [isSeeking, setIsSeeking] = useState(false);
   const [loop, setLoop] = useState<LoopRange>({ start: null, end: null });
   const [tracks, setTracks] = useState<TrackSource[]>([]);
+  const [loadProgress, setLoadProgress] = useState<LoadProgress | null>(null);
 
   const trackRequests = useMemo(() => trackMetas.map(toTrackRequest), [trackMetas]);
 
@@ -46,6 +48,7 @@ export function useAudioEngine(songId: string | null, trackMetas: TrackMeta[]) {
         if (!cancelled) {
           setStatus("idle");
           setTracks([]);
+          setLoadProgress(null);
         }
       });
       return () => {
@@ -70,6 +73,7 @@ export function useAudioEngine(songId: string | null, trackMetas: TrackMeta[]) {
         setMutedTracks({});
         setPosition(0);
         setDuration(0);
+        setLoadProgress({ phase: "fetching", loaded: 0, total: trackRequests.length });
         setTracks(
           trackRequests.map((request) => ({
             id: request.id,
@@ -79,12 +83,17 @@ export function useAudioEngine(songId: string | null, trackMetas: TrackMeta[]) {
           })),
         );
       })
-      .then(() => engine.loadTracks(trackRequests, provider))
+      .then(() =>
+        engine.loadTracks(trackRequests, provider, (progress) => {
+          if (!cancelled) setLoadProgress(progress);
+        }),
+      )
       .then((loadedTracks) => {
         if (!cancelled) {
           setTracks(loadedTracks);
           setStatus("ready");
           setDuration(engine.getDurationSamples());
+          setLoadProgress(null);
         }
       })
       .catch((error: unknown) => {
@@ -153,6 +162,7 @@ export function useAudioEngine(songId: string | null, trackMetas: TrackMeta[]) {
   return {
     status,
     loadError,
+    loadProgress,
     isPlaying,
     togglePlayPause,
     tracks,

@@ -1,0 +1,50 @@
+@use "../../styles/tokens.css";
+
+.Loader {
+  display: flex;
+  flex: 1 0 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+  color: var(--white);
+}
+
+.spinner {
+  flex-shrink: 0;
+  color: var(--secondary);
+  animation: spin 1.6s linear infinite;
+}
+
+.message {
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.4;
+  padding: 0 16px;
+}
+
+.progressTrack {
+  width: 100%;
+  max-width: 220px;
+  height: 8px;
+  background: var(--primary);
+  border-radius: var(--corner);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--secondary);
+  border-radius: var(--corner);
+  transition: width 0.2s ease-out;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

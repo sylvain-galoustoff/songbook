@@ -23,6 +23,16 @@ export interface LoopRange {
   end: number | null;
 }
 
+// États UI du chargement (cf. .claude/rules/audio-engine.md « Chargement &
+// erreurs ») : progression fine pendant le téléchargement (fetch parallèle,
+// incrémenté à chaque piste reçue), puis un seul état terminal "decoding"
+// pendant le décodage (séquentiel, pas de progression fine à ce stade).
+export type LoadProgress =
+  | { phase: "fetching"; loaded: number; total: number }
+  | { phase: "decoding"; total: number };
+
+export type LoadProgressListener = (progress: LoadProgress) => void;
+
 // Erreur de chargement identifiant la piste fautive : une piste manquante ou
 // indécodable bloque tout le morceau (cf. audio-engine.md), mais l'appelant
 // doit pouvoir dire laquelle a échoué plutôt qu'un échec générique.
@@ -89,18 +99,28 @@ export class AudioEngine {
   async loadTracks(
     sources: TrackRequest[],
     provider: TrackByteProvider,
+    onProgress?: LoadProgressListener,
   ): Promise<TrackSource[]> {
     await this.workletReady;
+
+    const total = sources.length;
+    let fetched = 0;
+    onProgress?.({ phase: "fetching", loaded: 0, total });
 
     const arrayBuffers = await Promise.all(
       sources.map(async (source) => {
         try {
-          return await provider.fetchTrackBytes(source);
+          const buffer = await provider.fetchTrackBytes(source);
+          fetched++;
+          onProgress?.({ phase: "fetching", loaded: fetched, total });
+          return buffer;
         } catch (error) {
           throw new TrackLoadError(source, error);
         }
       }),
     );
+
+    onProgress?.({ phase: "decoding", total });
 
     const tracks: TrackPayload[] = [];
     const trackSources: TrackSource[] = [];
