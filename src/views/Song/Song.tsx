@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { signOut } from "firebase/auth";
 import { useNavigate, useParams } from "react-router";
-import { auth } from "../../firebase/config";
 import { Header } from "../../components/Header/Header";
 import { getSong } from "../../firebase/songs";
+import { InstrumentGrid } from "./InstrumentGrid";
+import { AudioControls } from "./AudioControls";
+import { Tabbar } from "./Tabbar";
 import styles from "./Song.module.scss";
 
 const Song = () => {
@@ -34,12 +35,12 @@ const Song = () => {
 
   return (
     <div className={styles.Song}>
-      <Header
-        title={headerTitle}
-        subtitle=""
-        onBack={() => navigate("/")}
-        onLogout={() => signOut(auth)}
-      />
+      <Header title={headerTitle} badge="Version 4" onBack={() => navigate("/")} />
+      <div className={styles.body}>
+        <InstrumentGrid />
+        <AudioControls />
+      </div>
+      <Tabbar />
     </div>
   );
 };
