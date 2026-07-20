@@ -1,75 +1,71 @@
-# React + TypeScript + Vite
+# Songbook
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Lecteur multipiste pour répétitions de groupe. Chaque morceau est enregistré
+en multipiste (un instrument = une piste) ; l'app lit toutes les pistes en
+synchronisation échantillon-exacte et permet de couper certaines pistes
+(pour jouer par-dessus) ou de boucler un passage entre deux points A et B.
 
-Currently, two official plugins are available:
+Projet personnel, pour l'usage du groupe uniquement.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Stack
 
-## React Compiler
+- **Front** : React 19 + Vite + TypeScript, PWA via `vite-plugin-pwa`.
+- **Back** : Firebase (Auth, Firestore, Storage). Pas de serveur custom.
+- **Audio** : `AudioContext` unique + `AudioWorkletNode` unique qui mixe les
+  pistes en PCM Int16 — voir [`.claude/rules/audio-engine.md`](.claude/rules/audio-engine.md)
+  pour la spécification détaillée du moteur.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Voir [CLAUDE.md](CLAUDE.md) pour les règles et contraintes du projet.
 
-## Expanding the ESLint configuration
+## Commandes
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm run dev      # serveur de dev Vite
+npm run build     # build de production (tsc -b && vite build)
+npm run preview   # prévisualise le build
+npm run lint       # ESLint
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## État actuel
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Fonctionnel
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- **Authentification** — connexion par email/mot de passe (comptes créés
+  manuellement dans la console Firebase, aucune inscription publique dans
+  l'app). Routes protégées (`/`, `/song/:id`, `/new-song/*`) redirigent vers
+  `/login` si non connecté.
+- **Liste des morceaux** (`/`) — récupérée depuis Firestore (`listReadySongs`),
+  seuls les morceaux au statut `ready` sont affichés.
+- **Import d'un morceau** (`/new-song/*`, wizard en 4 étapes : nom du morceau,
+  sélection de piste, association à un instrument, récapitulatif) — chaque
+  piste FLAC est décodée et validée localement (fréquence, durée, empreinte)
+  avant upload vers Storage ; le morceau passe de `draft` à `ready` en fin de
+  wizard.
+- **Lecture d'un morceau** (`/song/:id`) — chargement (fetch parallèle +
+  décodage séquentiel Int16) avec indicateur de progression, lecture
+  synchronisée de toutes les pistes via le moteur `AudioEngine`/`AudioWorklet` :
+  play/pause, seek, mute par piste (grille d'instruments), boucle A→B, barre
+  de progression pilotée par la position renvoyée par le worklet.
 
-```
+### Connu comme incomplet / à faire
+
+- Pas de stockage hors-ligne (IndexedDB) ni d'écran de gestion du stockage —
+  prévu par CLAUDE.md, non implémenté.
+- Pas de `SharedArrayBuffer` ni de ralentissement sans changement de pitch
+  (hors périmètre v1, cf. `.claude/rules/audio-engine.md`).
+
+## Structure du projet
+
+- `src/components/` — composants UI
+- `src/audio/` — moteur audio (AudioContext, AudioWorklet, transport, boucle), indépendant de React
+- `src/firebase/` — init et accès Firestore/Storage/Auth
+- `src/hooks/` — hooks React
+- `src/router/` — routes et gardes d'accès
+- `src/views/` — écrans (Home, Song, LogIn, wizard NewSong)
+- `src/types/` — types TypeScript partagés
+
+## Modèle de données
+
+Voir la section « Modèle de données » de [CLAUDE.md](CLAUDE.md) pour le détail
+des collections Firestore (`songs/{songId}`, tableau `tracks` embarqué) et du
+Storage (`songs/{songId}/{trackId}.flac`).

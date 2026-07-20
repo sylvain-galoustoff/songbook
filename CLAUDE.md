@@ -22,10 +22,6 @@ Projet personnel, pour l'usage du groupe uniquement. Sans lien avec les projets 
 - `npm run build` — build de production
 - `npm run preview` — prévisualise le build
 - `npm run lint` — ESLint
-- `npm run test` — Vitest
-  <!-- Inexact en l'état : aucun script `test` ni dépendance Vitest n'existe
-       dans package.json (constaté dans docs/etat-des-lieux.md). À installer,
-       ou à retirer d'ici si les tests ne sont pas mis en place prochainement. -->
   <!-- Règles Firebase (firestore.rules, storage.rules) déployées sur le
        projet songbook-97910 (alias "default" dans .firebaserc). Pour
        redéployer après modification, toujours avec validation explicite :

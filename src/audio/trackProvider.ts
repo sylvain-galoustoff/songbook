@@ -15,15 +15,6 @@ export interface TrackByteProvider {
   fetchTrackBytes(track: TrackRequest): Promise<ArrayBuffer>;
 }
 
-// Implémentation statique : les fichiers FLAC sont servis depuis public/,
-// nommés d'après l'id de la piste (ex. public/Batterie.flac).
-export class StaticTrackProvider implements TrackByteProvider {
-  async fetchTrackBytes(track: TrackRequest): Promise<ArrayBuffer> {
-    const response = await fetch(`/${track.id}.flac`);
-    return response.arrayBuffer();
-  }
-}
-
 // Implémentation Firebase Storage : lit songs/{songId}/{trackId}.flac en une
 // fois (pas de streaming, cf. CLAUDE.md « À NE JAMAIS FAIRE »).
 export class FirebaseTrackProvider implements TrackByteProvider {
