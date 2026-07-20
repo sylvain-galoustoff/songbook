@@ -109,11 +109,13 @@ const Song = () => {
               disabled={false}
               progress={progress}
               durationSamples={player.duration}
+              loop={player.loop}
               onTogglePlay={player.togglePlayPause}
               onSeek={(index) => {
                 player.seek(index);
                 player.commitSeek();
               }}
+              onToggleLoop={player.toggleLoop}
             />
           </>
         )}
