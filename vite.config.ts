@@ -20,6 +20,7 @@ export default defineConfig({
           "**/*.{mp3,flac,wav}",
           "icons/pwa-192x192.png",
           "icons/pwa-512x512.png",
+          "icons/pwa-192-maskable.png",
           "icons/maskable-icon-512x512.png",
         ],
       },
@@ -28,8 +29,8 @@ export default defineConfig({
         short_name: "Songbook",
         description:
           "Lecteur multipiste synchronisé pour les répétitions du groupe.",
-        theme_color: "#863bff",
-        background_color: "#ffffff",
+        theme_color: "#dc3c64",
+        background_color: "#304878",
         display: "standalone",
         start_url: "/",
         scope: "/",
@@ -43,6 +44,12 @@ export default defineConfig({
             src: "icons/pwa-512x512.png",
             sizes: "512x512",
             type: "image/png",
+          },
+          {
+            src: "icons/pwa-192-maskable.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "maskable",
           },
           {
             src: "icons/maskable-icon-512x512.png",
