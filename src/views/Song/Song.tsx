@@ -108,7 +108,12 @@ const Song = () => {
               isPlaying={player.isPlaying}
               disabled={false}
               progress={progress}
+              durationSamples={player.duration}
               onTogglePlay={player.togglePlayPause}
+              onSeek={(index) => {
+                player.seek(index);
+                player.commitSeek();
+              }}
             />
           </>
         )}

@@ -1,3 +1,4 @@
+import type { MouseEvent } from "react";
 import { IoRepeat, IoPlay, IoPause } from "react-icons/io5";
 import styles from "./AudioControls.module.scss";
 
@@ -5,11 +6,27 @@ interface AudioControlsProps {
   isPlaying: boolean;
   disabled: boolean;
   progress: number;
+  durationSamples: number;
   onTogglePlay: () => void;
+  onSeek: (index: number) => void;
 }
 
-export const AudioControls = ({ isPlaying, disabled, progress, onTogglePlay }: AudioControlsProps) => {
+export const AudioControls = ({
+  isPlaying,
+  disabled,
+  progress,
+  durationSamples,
+  onTogglePlay,
+  onSeek,
+}: AudioControlsProps) => {
   const fillPercent = Math.min(1, Math.max(0, progress)) * 100;
+
+  const handleSeek = (event: MouseEvent<HTMLDivElement>) => {
+    if (disabled || durationSamples <= 0) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
+    onSeek(Math.round(ratio * durationSamples));
+  };
 
   return (
     <div className={styles.AudioControls}>
@@ -27,7 +44,15 @@ export const AudioControls = ({ isPlaying, disabled, progress, onTogglePlay }: A
           <IoRepeat size={34} />
         </button>
       </div>
-      <div className={styles.progress}>
+      <div
+        className={styles.progress}
+        role="slider"
+        aria-label="Position de lecture"
+        aria-valuemin={0}
+        aria-valuemax={durationSamples}
+        aria-valuenow={Math.round(progress * durationSamples)}
+        onClick={handleSeek}
+      >
         <div className={styles.progressFill} style={{ width: `${fillPercent}%` }} />
       </div>
     </div>
