@@ -19,6 +19,7 @@ import {
   type UpdateData,
 } from "firebase/firestore";
 import { firestore } from "./config";
+import type { TrackModeChoice } from "../types/track";
 
 const SONGS_COLLECTION = "songs";
 
@@ -46,6 +47,10 @@ export interface SongRecord {
   tempo?: number;
   key?: string;
   status: SongStatus;
+  // Mode de piste choisi au wizard (cf. src/views/NewSong/TrackMode) : le
+  // futur lecteur en a besoin pour savoir s'il affiche l'UI multipiste
+  // (mute par instrument) ou un lecteur simplifié à piste unique.
+  trackMode: TrackModeChoice;
   tracks: TrackMeta[];
   // Fréquence et durée canoniques du morceau, posées par
   // src/firebase/songImport.ts à la finalisation de l'import. Absentes tant
@@ -59,6 +64,7 @@ export interface NewSongInput {
   title: string;
   order: number;
   createdBy: string;
+  trackMode: TrackModeChoice;
   tempo?: number;
   key?: string;
 }
@@ -85,6 +91,7 @@ interface SongFirestoreData {
   tempo?: number;
   key?: string;
   status: SongStatus;
+  trackMode: TrackModeChoice;
   tracks: TrackMeta[];
   sampleRate?: number;
   durationSamples?: number;
@@ -109,6 +116,7 @@ function songFromSnapshot(snapshot: DocumentSnapshot<DocumentData>): SongRecord 
     tempo: data.tempo,
     key: data.key,
     status: data.status,
+    trackMode: data.trackMode,
     tracks: data.tracks,
     sampleRate: data.sampleRate,
     durationSamples: data.durationSamples,
@@ -146,6 +154,7 @@ export async function createDraftSong(input: NewSongInput): Promise<string> {
     createdAt: dateToTimestamp(new Date()),
     createdBy: input.createdBy,
     status: "draft",
+    trackMode: input.trackMode,
     tracks: [],
   };
   if (input.tempo !== undefined) data.tempo = input.tempo;

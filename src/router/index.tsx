@@ -3,6 +3,7 @@ import Home from "../views/Home/Home.tsx";
 import Song from "../views/Song/Song.tsx";
 import LogIn from "../views/LogIn/LogIn.tsx";
 import SongName from "../views/NewSong/SongName/SongName.tsx";
+import TrackMode from "../views/NewSong/TrackMode/TrackMode.tsx";
 import SelectTrack from "../views/NewSong/SelectTrack/SelectTrack.tsx";
 import SelectInstrument from "../views/NewSong/SelectInstrument/SelectInstrument.tsx";
 import Recap from "../views/NewSong/Recap/Recap.tsx";
@@ -46,6 +47,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       { path: "song-name", element: <SongName /> },
+      { path: "track-mode", element: <TrackMode /> },
       { path: "select-track", element: <SelectTrack /> },
       { path: "select-instrument", element: <SelectInstrument /> },
       { path: "recap", element: <Recap /> },

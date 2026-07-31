@@ -93,8 +93,18 @@ La synchro multipiste échantillon-exacte est le cœur du produit et prime sur t
 
 Firestore :
 
-- `songs/{songId}` : `{ title, order, createdAt, createdBy, tempo?, key?, status, sampleRate?, durationSamples? }`
+- `songs/{songId}` : `{ title, order, createdAt, createdBy, tempo?, key?, status, trackMode, sampleRate?, durationSamples? }`
   - `status` : `"draft" | "ready"` (cf. « Format & stockage audio »).
+  - `trackMode` : `"single" | "multi"`, choisi à l'étape « Mode de pistes »
+    du wizard d'import et posé dès la création du morceau (`draft`). Permet
+    au lecteur de savoir s'il doit afficher l'UI multipiste (mute par
+    instrument) ou un lecteur simplifié à piste unique. En mode `single`,
+    l'unique piste n'a pas d'instrument choisi par l'utilisateur (son
+    champ `instrument` porte une valeur de remplacement, cf.
+    `SINGLE_TRACK_INSTRUMENT_ID` dans `src/types/track.ts`) ; le wizard
+    saute alors l'étape de sélection d'instrument et enregistre le morceau
+    directement (`draft` → `ready` en un seul appel, sans passer par le
+    récap multipiste).
   - `sampleRate?` / `durationSamples?` : fréquence et durée **canoniques du
     morceau**, absentes tant que `status` est `"draft"`. Posées en une seule
     fois par le wizard d'import, à la finalisation (cf. « Format & stockage

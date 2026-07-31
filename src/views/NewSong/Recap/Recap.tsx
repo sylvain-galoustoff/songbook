@@ -21,7 +21,7 @@ import styles from "./Recap.module.scss";
 const Recap = () => {
   const navigate = useNavigate();
   const { user } = useAuthUser();
-  const { songTitle, tracks } = useNewSongWizard();
+  const { songTitle, trackMode, tracks } = useNewSongWizard();
   const [wantsMoreTracks, setWantsMoreTracks] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +37,12 @@ const Recap = () => {
     let songId: string | null = null;
     try {
       const order = await getNextSongOrder();
-      songId = await startSongImport({ title: songTitle, order, createdBy: user.uid });
+      songId = await startSongImport({
+        title: songTitle,
+        order,
+        createdBy: user.uid,
+        trackMode: trackMode ?? "multi",
+      });
 
       const trackMetas: TrackMeta[] = [];
 

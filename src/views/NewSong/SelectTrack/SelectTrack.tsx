@@ -1,12 +1,21 @@
 import { useRef, useState, type ChangeEvent } from "react";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router";
-import { IoArrowForward, IoFolder } from "react-icons/io5";
+import { IoArrowForward, IoCheckmarkDone, IoFolder } from "react-icons/io5";
 import { auth } from "../../../firebase/config";
 import { Header } from "../../../components/Header/Header";
 import { Button } from "../../../components/Button/Button";
+import { useAuthUser } from "../../../hooks/useAuthUser";
 import { useNewSongWizard } from "../../../hooks/useNewSongWizard";
 import { validateTrackFile, type TrackRejectionReason } from "../../../audio/trackValidation";
+import { SINGLE_TRACK_INSTRUMENT_ID } from "../../../types/track";
+import { getNextSongOrder } from "../../../firebase/songs";
+import {
+  abortSongImport,
+  finalizeSongImport,
+  startSongImport,
+  uploadImportTrack,
+} from "../../../firebase/songImport";
 import styles from "./SelectTrack.module.scss";
 
 function describeRejection(reason: TrackRejectionReason, fileName: string): string {
@@ -22,10 +31,14 @@ function describeRejection(reason: TrackRejectionReason, fileName: string): stri
 
 const SelectTrack = () => {
   const navigate = useNavigate();
-  const { songTitle, trackFile, setTrackFile, setTrackFileMetadata, tracks } = useNewSongWizard();
+  const { user } = useAuthUser();
+  const { songTitle, trackMode, trackFile, setTrackFile, trackFileMetadata, setTrackFileMetadata, tracks } =
+    useNewSongWizard();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [validating, setValidating] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isSingleTrack = trackMode === "single";
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
@@ -53,6 +66,44 @@ const SelectTrack = () => {
     setTrackFileMetadata(result.metadata);
   };
 
+  const handleFinishSingleTrack = async () => {
+    if (!user || !trackFile || !trackFileMetadata) {
+      return;
+    }
+
+    setSubmitting(true);
+    setError(null);
+
+    let songId: string | null = null;
+    try {
+      const order = await getNextSongOrder();
+      songId = await startSongImport({
+        title: songTitle,
+        order,
+        createdBy: user.uid,
+        trackMode: "single",
+      });
+
+      const trackMeta = await uploadImportTrack(songId, {
+        id: crypto.randomUUID(),
+        instrument: SINGLE_TRACK_INSTRUMENT_ID,
+        order: 0,
+        file: trackFile,
+        ...trackFileMetadata,
+      });
+
+      await finalizeSongImport(songId, [trackMeta]);
+      navigate("/");
+    } catch {
+      if (songId) {
+        await abortSongImport(songId).catch(() => {});
+      }
+      setError("Une erreur est survenue pendant l'enregistrement du morceau.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className={styles.SelectTrack}>
       <Header
@@ -69,7 +120,7 @@ const SelectTrack = () => {
               variant="secondary"
               icon={<IoFolder size={24} />}
               onClick={() => fileInputRef.current?.click()}
-              disabled={validating}
+              disabled={validating || submitting}
             >
               {validating
                 ? "Vérification…"
@@ -87,15 +138,27 @@ const SelectTrack = () => {
             {error && <p className={styles.error}>{error}</p>}
           </div>
         </div>
-        <Button
-          variant="primary"
-          trailingIcon
-          icon={<IoArrowForward size={24} />}
-          disabled={!trackFile || validating}
-          onClick={() => navigate("/new-song/select-instrument")}
-        >
-          Attribuer l’instrument
-        </Button>
+        {isSingleTrack ? (
+          <Button
+            variant="primary"
+            trailingIcon
+            icon={<IoCheckmarkDone size={24} />}
+            disabled={!trackFile || validating || submitting}
+            onClick={handleFinishSingleTrack}
+          >
+            {submitting ? "Enregistrement…" : "Terminer"}
+          </Button>
+        ) : (
+          <Button
+            variant="primary"
+            trailingIcon
+            icon={<IoArrowForward size={24} />}
+            disabled={!trackFile || validating}
+            onClick={() => navigate("/new-song/select-instrument")}
+          >
+            Attribuer l’instrument
+          </Button>
+        )}
       </div>
     </div>
   );
