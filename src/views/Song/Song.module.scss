@@ -19,6 +19,13 @@
   box-sizing: border-box;
 }
 
+// Morceau en mode simple piste (cf. CLAUDE.md `trackMode`) : pas de grille
+// d'instruments à muter, donc les contrôles se centrent verticalement.
+.singleTrack {
+  justify-content: center;
+  padding: 64px 32px;
+}
+
 .notice {
   flex: 1 0 0;
   display: flex;

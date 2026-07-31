@@ -1,11 +1,13 @@
 import { createContext, useContext } from "react";
 import type { InstrumentId } from "../types/instrument";
-import type { WizardTrack } from "../types/track";
+import type { TrackModeChoice, WizardTrack } from "../types/track";
 import type { ValidatedTrackMetadata } from "../audio/trackValidation";
 
 export interface NewSongWizardState {
   songTitle: string;
   setSongTitle: (title: string) => void;
+  trackMode: TrackModeChoice | null;
+  setTrackMode: (mode: TrackModeChoice | null) => void;
   trackFile: File | null;
   setTrackFile: (file: File | null) => void;
   trackFileMetadata: ValidatedTrackMetadata | null;

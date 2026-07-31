@@ -71,6 +71,9 @@ const Song = () => {
   // « Format & stockage audio »).
   const playableSong = song && song.status === "ready" && song.tracks.length > 0 ? song : null;
   const player = useAudioEngine(playableSong?.id ?? null, playableSong?.tracks ?? EMPTY_TRACKS);
+  // Mode simple piste (cf. CLAUDE.md `trackMode`) : pas de mute possible,
+  // donc pas de grille d'instruments — seuls les contrôles de lecture restent.
+  const isSingleTrack = playableSong?.trackMode === "single";
 
   const headerTitle = loading ? "Chargement…" : (song?.title ?? "Morceau introuvable");
   const progress = player.duration > 0 ? player.position / player.duration : 0;
@@ -88,7 +91,7 @@ const Song = () => {
   return (
     <div className={styles.Song}>
       <Header title={headerTitle} onBack={() => navigate("/")} />
-      <div className={styles.body}>
+      <div className={isSingleTrack ? `${styles.body} ${styles.singleTrack}` : styles.body}>
         {showLoader && <Loader message={loaderMessage} progress={loaderProgress} />}
         {!loading && !song && <p className={styles.notice}>Morceau introuvable.</p>}
         {!loading && song && !playableSong && (
@@ -99,11 +102,13 @@ const Song = () => {
         )}
         {playableSong && player.status === "ready" && (
           <>
-            <InstrumentGrid
-              tracks={player.tracks}
-              mutedTracks={player.mutedTracks}
-              onToggleMute={player.toggleTrackMute}
-            />
+            {!isSingleTrack && (
+              <InstrumentGrid
+                tracks={player.tracks}
+                mutedTracks={player.mutedTracks}
+                onToggleMute={player.toggleTrackMute}
+              />
+            )}
             <AudioControls
               isPlaying={player.isPlaying}
               disabled={false}

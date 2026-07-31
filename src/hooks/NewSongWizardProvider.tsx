@@ -1,11 +1,12 @@
 import { useState, type ReactNode } from "react";
 import { NewSongWizardContext } from "./useNewSongWizard";
 import type { InstrumentId } from "../types/instrument";
-import type { WizardTrack } from "../types/track";
+import type { TrackModeChoice, WizardTrack } from "../types/track";
 import type { ValidatedTrackMetadata } from "../audio/trackValidation";
 
 export const NewSongWizardProvider = ({ children }: { children: ReactNode }) => {
   const [songTitle, setSongTitle] = useState("");
+  const [trackMode, setTrackMode] = useState<TrackModeChoice | null>(null);
   const [trackFile, setTrackFile] = useState<File | null>(null);
   const [trackFileMetadata, setTrackFileMetadata] = useState<ValidatedTrackMetadata | null>(null);
   const [trackInstrument, setTrackInstrument] = useState<InstrumentId | null>(null);
@@ -30,6 +31,8 @@ export const NewSongWizardProvider = ({ children }: { children: ReactNode }) => 
       value={{
         songTitle,
         setSongTitle,
+        trackMode,
+        setTrackMode,
         trackFile,
         setTrackFile,
         trackFileMetadata,
