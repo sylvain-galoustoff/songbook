@@ -31,9 +31,14 @@ export const Tabbar = ({ activeTab, onTabChange }: TabbarProps) => {
         <IoVolumeMedium size={24} />
         <span className={styles.label}>Musique</span>
       </button>
-      {/* Accords parqué (docs/lyrics-feature.md §10) : inerte cette session,
-          ni actif ni navigable. */}
-      <button type="button" className={styles.tab} disabled>
+      {/* Contrairement à Lyrics (cliquable seulement si hasLyrics), l'onglet
+          Accords est TOUJOURS atteignable : la surface Accords est son
+          propre éditeur (cf. docs/chords-feature.md §3). */}
+      <button
+        type="button"
+        className={tabClassName(activeTab === "accords")}
+        onClick={() => onTabChange("accords")}
+      >
         <IoMusicalNotes size={24} />
         <span className={styles.label}>Accords</span>
       </button>

@@ -25,19 +25,23 @@ export interface ChordSection {
 }
 
 // Libellés solfège par pitch class, DIÈSES par défaut (pas de bémols).
+// Title case (docs/chords-feature.md §7, polish maquette) : c'est la casse
+// affichée partout (cartes, aperçu du compositeur) ; seuls les boutons de
+// note du compositeur la remontent en majuscules, par CSS (text-transform),
+// jamais en réécrivant le libellé ici.
 const ROOT_LABELS: Record<number, string> = {
-  0: "DO",
-  1: "DO♯",
-  2: "RE",
-  3: "RE♯",
-  4: "MI",
-  5: "FA",
-  6: "FA♯",
-  7: "SOL",
-  8: "SOL♯",
-  9: "LA",
-  10: "LA♯",
-  11: "SI",
+  0: "Do",
+  1: "Do♯",
+  2: "Re",
+  3: "Re♯",
+  4: "Mi",
+  5: "Fa",
+  6: "Fa♯",
+  7: "Sol",
+  8: "Sol♯",
+  9: "La",
+  10: "La♯",
+  11: "Si",
 };
 
 export function rootLabel(root: number): string {

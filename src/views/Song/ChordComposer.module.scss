@@ -1,0 +1,126 @@
+@use "../../styles/tokens.css";
+
+// Zone d'action distincte de la grille (garde-fou tap fantôme,
+// docs/chords-feature.md §5) : panneau plein, pas juste du texte sur le fond.
+.ChordComposer {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 16px;
+  width: 100%;
+  padding: 16px;
+  border-radius: var(--corner);
+  background: var(--primary);
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.target {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--textDisabled);
+}
+
+.preview {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--white);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.noteButton {
+  flex: 1 1 0;
+  min-width: 48px;
+  padding: 12px 4px;
+  border: 1px solid var(--secondary);
+  border-radius: var(--corner);
+  background: none;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--white);
+  cursor: pointer;
+  // Seul endroit qui remonte le libellé en majuscules (docs/chords-feature.md
+  // §7, polish maquette) : rootLabel reste en Title case partout ailleurs.
+  text-transform: uppercase;
+}
+
+.armed {
+  background: var(--secondary);
+}
+
+.qualityButton {
+  flex: 1 1 0;
+  min-width: 64px;
+  padding: 12px 8px;
+  border: none;
+  border-radius: var(--corner);
+  background: var(--white);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--primary);
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.drawer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  padding: 16px;
+  border-radius: var(--corner);
+  background: var(--background);
+  box-sizing: border-box;
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.drawerTitle {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 20px;
+  color: var(--white);
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  background: none;
+  color: var(--white);
+  cursor: pointer;
+}
+
+.drawerGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}

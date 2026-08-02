@@ -10,6 +10,7 @@ import { useRotatingMessage } from "../../hooks/useRotatingMessage";
 import { InstrumentGrid } from "./InstrumentGrid";
 import { AudioControls } from "./AudioControls";
 import { LyricsPrompter } from "./LyricsPrompter";
+import { ChordsView } from "./ChordsView";
 import { Tabbar, type SongTab } from "./Tabbar";
 import styles from "./Song.module.scss";
 
@@ -172,6 +173,7 @@ const Song = () => {
             )}
           </>
         )}
+        {!loading && song && activeTab === "accords" && <ChordsView key={song.id} song={song} />}
       </div>
       <Tabbar activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
