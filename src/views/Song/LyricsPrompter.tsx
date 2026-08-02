@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
 import { IoPause, IoPlay } from "react-icons/io5";
 import type { LyricLine } from "../../firebase/songs";
 import styles from "./LyricsPrompter.module.scss";
@@ -26,6 +27,20 @@ const MAX_RATE = 40;
 // Fallback si la mesure DOM échoue (élément pas encore monté) : purement une
 // valeur de secours pour amorcer le calcul, jamais affichée telle quelle.
 const FALLBACK_LINE_HEIGHT_PX = 24;
+
+// Seuil de déplacement (px) qui départage hold et swipe (docs/lyrics-feature.md
+// §5/§7) : un contact qui ne bouge pas plus que ça reste un hold (gel) ; au-delà,
+// c'est un swipe (ajustement du rythme). 10px correspond au "touch slop" usuel
+// des plateformes tactiles (~8-10px sur iOS/Android) : assez grand pour absorber
+// le tremblement naturel d'un doigt posé, assez petit pour rester réactif au
+// premier vrai geste de glissement.
+const HOLD_MOVE_THRESHOLD_PX = 10;
+
+// Sensibilité du swipe : nombre de pixels de glissement pour 1 unité de rythme
+// (lignes/minute). 8px/unité fait parcourir tout le range (32 unités, 8 à 40)
+// sur ~256px, une amplitude de glissement confortable à une main sur un
+// téléphone, sans être si sensible qu'un petit geste sature immédiatement min/max.
+const SWIPE_PX_PER_RATE_UNIT = 8;
 
 const DEFAULT_FONT_SIZE: FontSize = "sm";
 const FONT_SIZE_STORAGE_KEY = "lyrics.fontSize";
@@ -68,6 +83,14 @@ export const LyricsPrompter = ({ lines }: LyricsPrompterProps) => {
   // re-render React (cf. point de vigilance perf).
   const scrollOffsetRef = useRef(0);
   const pxPerSecondRef = useRef(0);
+  // Gel temporaire du défilement (hold) : consulté par la boucle rAF, ne
+  // modifie ni isPlaying ni rate — cf. point de vigilance (une seule boucle).
+  const isFrozenRef = useRef(false);
+  // Désambiguïsation hold/swipe (docs/lyrics-feature.md §5/§7).
+  const gesturePointerIdRef = useRef<number | null>(null);
+  const gestureModeRef = useRef<"undetermined" | "swipe">("undetermined");
+  const gestureStartYRef = useRef(0);
+  const gestureLastYRef = useRef(0);
 
   useEffect(() => {
     try {
@@ -106,10 +129,14 @@ export const LyricsPrompter = ({ lines }: LyricsPrompterProps) => {
 
     const tick = (now: number) => {
       if (lastTime !== null) {
-        const elapsedSeconds = (now - lastTime) / 1000;
-        scrollOffsetRef.current += elapsedSeconds * pxPerSecondRef.current;
-        if (trackRef.current) {
-          trackRef.current.style.transform = `translateY(-${scrollOffsetRef.current}px)`;
+        // lastTime avance même gelé : évite un saut d'offset à la reprise
+        // (le temps "gelé" n'est simplement jamais converti en pixels).
+        if (!isFrozenRef.current) {
+          const elapsedSeconds = (now - lastTime) / 1000;
+          scrollOffsetRef.current += elapsedSeconds * pxPerSecondRef.current;
+          if (trackRef.current) {
+            trackRef.current.style.transform = `translateY(-${scrollOffsetRef.current}px)`;
+          }
         }
       }
       lastTime = now;
@@ -120,9 +147,62 @@ export const LyricsPrompter = ({ lines }: LyricsPrompterProps) => {
     return () => cancelAnimationFrame(frameId);
   }, [isPlaying]);
 
+  // Un seul contact géré à la fois (ignore un second doigt qui se poserait
+  // pendant un geste déjà en cours).
+  const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (gesturePointerIdRef.current !== null) return;
+    gesturePointerIdRef.current = event.pointerId;
+    gestureModeRef.current = "undetermined";
+    gestureStartYRef.current = event.clientY;
+    gestureLastYRef.current = event.clientY;
+    // Contact posé = hold par défaut, gel immédiat ; requalifié en swipe dans
+    // handlePointerMove si le déplacement franchit le seuil.
+    isFrozenRef.current = true;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerId !== gesturePointerIdRef.current) return;
+
+    if (gestureModeRef.current === "undetermined") {
+      const distanceFromStart = Math.abs(event.clientY - gestureStartYRef.current);
+      if (distanceFromStart <= HOLD_MOVE_THRESHOLD_PX) return;
+      // Seuil franchi : ce n'est plus un hold, on lève le gel et on bascule en swipe.
+      gestureModeRef.current = "swipe";
+      isFrozenRef.current = false;
+    }
+
+    // Swipe : haut (deltaY < 0) accélère, bas ralentit. Delta incrémental
+    // depuis le dernier move, pour un ajustement continu pendant le glissement.
+    const deltaY = event.clientY - gestureLastYRef.current;
+    gestureLastYRef.current = event.clientY;
+    setRate((current) => {
+      const next = current - deltaY / SWIPE_PX_PER_RATE_UNIT;
+      return Math.round(Math.min(MAX_RATE, Math.max(MIN_RATE, next)));
+    });
+  };
+
+  // pointerup et pointercancel (interruption) traités identiquement : reprise
+  // du défilement (no-op si déjà un swipe, déjà dégelé plus haut).
+  const endGesture = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerId !== gesturePointerIdRef.current) return;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    gesturePointerIdRef.current = null;
+    gestureModeRef.current = "undetermined";
+    isFrozenRef.current = false;
+  };
+
   return (
     <div className={styles.LyricsPrompter}>
-      <div className={styles.viewport}>
+      <div
+        className={styles.viewport}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={endGesture}
+        onPointerCancel={endGesture}
+      >
         <div ref={trackRef} className={`${styles.track} ${FONT_SIZE_CLASS[fontSize]}`}>
           {lines.map((line, index) => (
             <div key={index} className={styles.line}>

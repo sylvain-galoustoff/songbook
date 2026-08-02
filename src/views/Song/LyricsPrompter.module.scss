@@ -18,6 +18,9 @@
   min-height: 0;
   overflow: hidden;
   border-radius: var(--corner);
+  // Neutralise le scroll natif / pull-to-refresh SUR CETTE ZONE UNIQUEMENT
+  // (geste hold/swipe du prompteur) ; le reste de la page garde son scroll normal.
+  touch-action: none;
 }
 
 .track {
