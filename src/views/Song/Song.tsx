@@ -173,7 +173,7 @@ const Song = () => {
           </>
         )}
       </div>
-      <Tabbar activeTab={activeTab} onTabChange={setActiveTab} lyricsEnabled={songHasLyrics} />
+      <Tabbar activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
 };

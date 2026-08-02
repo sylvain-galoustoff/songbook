@@ -20,6 +20,7 @@ import {
 } from "firebase/firestore";
 import { firestore } from "./config";
 import type { TrackModeChoice } from "../types/track";
+import type { ChordSection } from "../types/chord";
 
 const SONGS_COLLECTION = "songs";
 
@@ -67,6 +68,7 @@ export interface SongRecord {
   sampleRate?: number;
   durationSamples?: number;
   lyrics?: { lines: LyricLine[] };
+  chords?: { sections: ChordSection[] };
 }
 
 export interface NewSongInput {
@@ -88,6 +90,7 @@ export interface SongUpdate {
   sampleRate?: number;
   durationSamples?: number;
   lyrics?: { lines: LyricLine[] };
+  chords?: { sections: ChordSection[] };
 }
 
 export interface NewLyricsSongInput {
@@ -113,6 +116,7 @@ interface SongFirestoreData {
   sampleRate?: number;
   durationSamples?: number;
   lyrics?: { lines: LyricLine[] };
+  chords?: { sections: ChordSection[] };
 }
 
 function timestampToDate(timestamp: Timestamp): Date {
@@ -139,6 +143,7 @@ function songFromSnapshot(snapshot: DocumentSnapshot<DocumentData>): SongRecord 
     sampleRate: data.sampleRate,
     durationSamples: data.durationSamples,
     lyrics: data.lyrics,
+    chords: data.chords,
   };
 }
 
@@ -250,4 +255,12 @@ export function hasLyricsContent(lines: LyricLine[]): boolean {
 // Conditionne l'onglet Lyrics : présent ET au moins une ligne non vide.
 export function hasLyrics(song: SongRecord): boolean {
   return song.lyrics !== undefined && hasLyricsContent(song.lyrics.lines);
+}
+
+// Conditionne l'onglet Accords : présent ET au moins une section non vide.
+export function hasChords(song: SongRecord): boolean {
+  return (
+    song.chords !== undefined &&
+    song.chords.sections.some((section) => section.chords.length > 0)
+  );
 }

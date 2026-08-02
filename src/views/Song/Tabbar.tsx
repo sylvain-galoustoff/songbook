@@ -6,22 +6,18 @@ export type SongTab = "lyrics" | "musique" | "accords";
 interface TabbarProps {
   activeTab: SongTab;
   onTabChange: (tab: SongTab) => void;
-  // Onglet Lyrics cliquable seulement si le morceau a des paroles (cf.
-  // docs/lyrics-feature.md §4 « Machinerie d'onglets »).
-  lyricsEnabled: boolean;
 }
 
 function tabClassName(isActive: boolean): string {
   return isActive ? `${styles.tab} ${styles.active}` : styles.tab;
 }
 
-export const Tabbar = ({ activeTab, onTabChange, lyricsEnabled }: TabbarProps) => {
+export const Tabbar = ({ activeTab, onTabChange }: TabbarProps) => {
   return (
     <nav className={styles.Tabbar}>
       <button
         type="button"
         className={tabClassName(activeTab === "lyrics")}
-        disabled={!lyricsEnabled}
         onClick={() => onTabChange("lyrics")}
       >
         <IoText size={24} />
