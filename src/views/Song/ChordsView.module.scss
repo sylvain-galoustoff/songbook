@@ -1,0 +1,41 @@
+@use "../../styles/tokens.css";
+
+.ChordsView {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  gap: 16px;
+}
+
+// Parties + bouton d'ajout : seule cette zone scrolle, le compositeur reste
+// fixe en bas (docs/chords-feature.md §5, compositeur permanent).
+.sections {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  gap: 32px;
+  overflow-y: auto;
+}
+
+.saveError {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--secondary);
+}
+
+.retryButton {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--secondary);
+  text-decoration: underline;
+  cursor: pointer;
+}

@@ -1,0 +1,78 @@
+@use "../../styles/tokens.css";
+
+.SectionBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 4px 0 8px;
+  border-bottom: 2px solid transparent;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+// Indicateur discret de partie active (docs/chords-feature.md §6) : un
+// simple liseré, pas de fond ni de cadre complet.
+.active {
+  border-bottom-color: var(--secondary);
+}
+
+.name {
+  flex: 1 0 0;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--white);
+  word-break: break-word;
+}
+
+.nameInput {
+  flex: 1 0 0;
+  min-width: 0;
+  padding: 0 0 2px;
+  border: none;
+  border-bottom: 2px solid var(--secondary);
+  outline: none;
+  background: transparent;
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--white);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.iconButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  background: none;
+  color: var(--white);
+  cursor: pointer;
+}
+
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}

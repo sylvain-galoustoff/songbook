@@ -1,0 +1,41 @@
+@use "../../styles/tokens.css";
+
+.AddSectionForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  padding: 16px;
+  border-radius: var(--corner);
+  background: var(--primary);
+  box-sizing: border-box;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.chip {
+  padding: 8px 16px;
+  border: 1px solid var(--secondary);
+  border-radius: var(--corner);
+  background: none;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--white);
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+
+  > * {
+    flex: 1 1 0;
+  }
+}
