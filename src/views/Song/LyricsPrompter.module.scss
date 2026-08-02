@@ -1,0 +1,131 @@
+@use "../../styles/tokens.css";
+
+.LyricsPrompter {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  gap: 16px;
+}
+
+.viewport {
+  // Repère de lecture (docs/lyrics-feature.md §5) : la ligne active reste
+  // scotchée à ~40 % de la hauteur du conteneur pendant que le texte défile.
+  --lyrics-anchor: 40%;
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: var(--corner);
+  // Neutralise le scroll natif / pull-to-refresh SUR CETTE ZONE UNIQUEMENT
+  // (geste hold/swipe du prompteur) ; le reste de la page garde son scroll normal.
+  touch-action: none;
+}
+
+.track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--lyrics-anchor);
+  // L'offset de défilement (translateY, px) est écrit directement en JS par
+  // la boucle rAF ; cette valeur ne sert qu'à l'état initial/repos.
+  transform: translateY(0);
+  font-family: var(--font-body);
+  color: var(--white);
+  text-align: center;
+}
+
+.line {
+  padding: 0.25em 16px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.fontSm {
+  font-size: var(--lyrics-font-sm);
+}
+
+.fontMd {
+  font-size: var(--lyrics-font-md);
+}
+
+.fontLg {
+  font-size: var(--lyrics-font-lg);
+}
+
+// Témoin de mesure : jamais visible, jamais dans le flux, sert uniquement à
+// lire la hauteur de ligne réelle via getComputedStyle (cf. LyricsPrompter.tsx).
+.measure {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+  font-family: var(--font-body);
+  line-height: 1.5;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.playButton {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: var(--corner);
+  background: var(--primary);
+  color: var(--white);
+  cursor: pointer;
+}
+
+.rateSlider {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.fontSizeControl {
+  display: flex;
+  flex-shrink: 0;
+  border-radius: var(--corner);
+  overflow: hidden;
+}
+
+.fontSizeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 56px;
+  border: none;
+  background: var(--primary);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: var(--lyrics-font-sm);
+  cursor: pointer;
+  box-sizing: border-box;
+
+  &.active {
+    background: var(--secondary);
+  }
+}
+
+.editButton {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--corner);
+  background: var(--primary);
+  color: var(--white);
+  text-decoration: none;
+}

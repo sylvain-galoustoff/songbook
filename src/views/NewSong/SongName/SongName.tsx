@@ -36,7 +36,7 @@ const SongName = () => {
           trailingIcon
           icon={<IoArrowForward size={24} />}
           disabled={songTitle.trim() === ""}
-          onClick={() => navigate("/new-song/track-mode")}
+          onClick={() => navigate("/new-song/song-action")}
         >
           Réglages pistes audio
         </Button>

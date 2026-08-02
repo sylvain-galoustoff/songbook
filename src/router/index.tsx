@@ -1,8 +1,11 @@
 import { createBrowserRouter, Outlet } from "react-router";
 import Home from "../views/Home/Home.tsx";
 import Song from "../views/Song/Song.tsx";
+import LyricsEdit from "../views/Song/LyricsEdit/LyricsEdit.tsx";
 import LogIn from "../views/LogIn/LogIn.tsx";
 import SongName from "../views/NewSong/SongName/SongName.tsx";
+import SongAction from "../views/NewSong/SongAction/SongAction.tsx";
+import LyricsText from "../views/NewSong/LyricsText/LyricsText.tsx";
 import TrackMode from "../views/NewSong/TrackMode/TrackMode.tsx";
 import SelectTrack from "../views/NewSong/SelectTrack/SelectTrack.tsx";
 import SelectInstrument from "../views/NewSong/SelectInstrument/SelectInstrument.tsx";
@@ -29,6 +32,14 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    path: "/song/:songId/lyrics/edit",
+    element: (
+      <ProtectedRoute>
+        <LyricsEdit />
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: "/login",
     element: (
       <PublicOnlyRoute>
@@ -47,6 +58,8 @@ export const router = createBrowserRouter([
     ),
     children: [
       { path: "song-name", element: <SongName /> },
+      { path: "song-action", element: <SongAction /> },
+      { path: "lyrics-text", element: <LyricsText /> },
       { path: "track-mode", element: <TrackMode /> },
       { path: "select-track", element: <SelectTrack /> },
       { path: "select-instrument", element: <SelectInstrument /> },
