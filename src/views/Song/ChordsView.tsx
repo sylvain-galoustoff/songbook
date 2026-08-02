@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { IoAddCircleOutline } from "react-icons/io5";
+import { IoAddCircleOutline, IoCheckmarkOutline, IoCreateOutline } from "react-icons/io5";
 import type { SongRecord } from "../../firebase/songs";
 import type { Chord, ChordSection } from "../../types/chord";
 import { useChordsAutosave } from "../../hooks/useChordsAutosave";
@@ -42,6 +42,11 @@ export const ChordsView = ({ song }: ChordsViewProps) => {
   );
   const [isAdding, setIsAdding] = useState(false);
   const [selectedChord, setSelectedChord] = useState<SelectedChord | null>(null);
+  // Bascule d'affichage uniquement (lecture par défaut) : jamais persisté, se
+  // réinitialise naturellement à "read" à chaque montage puisque ChordsView
+  // est démontée/remontée à chaque changement d'onglet ou de morceau (voir
+  // Song.tsx, rendu conditionnel avec key={song.id}).
+  const [mode, setMode] = useState<"read" | "edit">("read");
 
   const sections = useMemo(() => entries.map((entry) => entry.section), [entries]);
   const { status: saveStatus, retry } = useChordsAutosave(song.id, sections);
@@ -107,11 +112,34 @@ export const ChordsView = ({ song }: ChordsViewProps) => {
   };
 
   const activeEntry = entries.find((entry) => entry.key === activeKey) ?? null;
+  const isReadMode = mode === "read";
   const showEmptyState = entries.length === 0 && !isAdding;
 
+  // Sortie du mode édition : vide la sélection de carte en cours. Le
+  // compositeur, lui, se désarme naturellement en se démontant (il n'est
+  // rendu qu'en mode "edit"). `isAdding` est également réinitialisé pour
+  // éviter un état vide incohérent en lecture si une création de partie
+  // était en cours.
+  const handleDone = () => {
+    setMode("read");
+    setSelectedChord(null);
+    setIsAdding(false);
+  };
+
   return (
-    <div className={chordsViewStyles.ChordsView} onClick={() => setSelectedChord(null)}>
-      {showEmptyState && (
+    <div
+      className={chordsViewStyles.ChordsView}
+      onClick={() => !isReadMode && setSelectedChord(null)}
+    >
+      {showEmptyState && isReadMode && (
+        <div className={songStyles.emptyState}>
+          <p className={songStyles.notice}>Pas encore d’accords</p>
+          <Button icon={<IoAddCircleOutline size={24} />} onClick={() => setMode("edit")}>
+            Ajouter des accords
+          </Button>
+        </div>
+      )}
+      {showEmptyState && !isReadMode && (
         <div className={songStyles.emptyState}>
           <p className={songStyles.notice}>Ajoute une partie pour commencer</p>
           <Button icon={<IoAddCircleOutline size={24} />} onClick={() => setIsAdding(true)}>
@@ -125,22 +153,28 @@ export const ChordsView = ({ song }: ChordsViewProps) => {
             <SectionBlock
               key={entry.key}
               section={entry.section}
+              readOnly={isReadMode}
               isActive={entry.key === activeKey}
-              onActivate={() => setActiveKey(entry.key)}
-              onRename={(name) => handleRenameSection(entry.key, name)}
-              onDelete={() => handleDeleteSection(entry.key)}
-              selectedChordIndex={selectedChord?.sectionKey === entry.key ? selectedChord.chordIndex : null}
-              onSelectChord={(index) => setSelectedChord({ sectionKey: entry.key, chordIndex: index })}
-              onDeleteChord={(index) => handleDeleteChord(entry.key, index)}
+              onActivate={isReadMode ? undefined : () => setActiveKey(entry.key)}
+              onRename={isReadMode ? undefined : (name) => handleRenameSection(entry.key, name)}
+              onDelete={isReadMode ? undefined : () => handleDeleteSection(entry.key)}
+              selectedChordIndex={
+                !isReadMode && selectedChord?.sectionKey === entry.key ? selectedChord.chordIndex : null
+              }
+              onSelectChord={
+                isReadMode ? undefined : (index) => setSelectedChord({ sectionKey: entry.key, chordIndex: index })
+              }
+              onDeleteChord={isReadMode ? undefined : (index) => handleDeleteChord(entry.key, index)}
             />
           ))}
-          {isAdding ? (
-            <AddSectionForm onSubmit={handleAddSection} onCancel={() => setIsAdding(false)} />
-          ) : (
-            <Button variant="secondary" icon={<IoAddCircleOutline size={24} />} onClick={() => setIsAdding(true)}>
-              Ajouter une partie
-            </Button>
-          )}
+          {!isReadMode &&
+            (isAdding ? (
+              <AddSectionForm onSubmit={handleAddSection} onCancel={() => setIsAdding(false)} />
+            ) : (
+              <Button variant="secondary" icon={<IoAddCircleOutline size={24} />} onClick={() => setIsAdding(true)}>
+                Ajouter une partie
+              </Button>
+            ))}
         </div>
       )}
       {saveStatus === "error" && (
@@ -152,8 +186,23 @@ export const ChordsView = ({ song }: ChordsViewProps) => {
         </p>
       )}
       {/* Permanent dès qu'une partie existe (docs/chords-feature.md §5), même
-          pendant la création d'une nouvelle partie (isAdding). */}
-      {activeEntry && <ChordComposer activeSectionName={activeEntry.section.name} onAddChord={handleAddChord} />}
+          pendant la création d'une nouvelle partie (isAdding). Absent en
+          lecture : la bascule d'affichage suffit à le démonter, ce qui le
+          désarme du même coup. */}
+      {!isReadMode && activeEntry && (
+        <ChordComposer activeSectionName={activeEntry.section.name} onAddChord={handleAddChord} />
+      )}
+      <div className={chordsViewStyles.toolbar}>
+        {isReadMode ? (
+          <Button variant="secondary" icon={<IoCreateOutline size={24} />} onClick={() => setMode("edit")}>
+            Modifier
+          </Button>
+        ) : (
+          <Button variant="secondary" icon={<IoCheckmarkOutline size={24} />} onClick={handleDone}>
+            Terminé
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
