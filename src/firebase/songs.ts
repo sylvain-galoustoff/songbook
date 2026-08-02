@@ -38,6 +38,13 @@ export interface TrackMeta {
   contentHash: string;
 }
 
+// "" est une ligne légitime (séparateur couplet/refrain). `timeMs` absent =
+// autoscroll libre (Phase 1) ; présent = défilement synchronisé (Phase 2).
+export interface LyricLine {
+  text: string;
+  timeMs?: number;
+}
+
 export interface SongRecord {
   id: string;
   title: string;
@@ -49,8 +56,9 @@ export interface SongRecord {
   status: SongStatus;
   // Mode de piste choisi au wizard (cf. src/views/NewSong/TrackMode) : le
   // futur lecteur en a besoin pour savoir s'il affiche l'UI multipiste
-  // (mute par instrument) ou un lecteur simplifié à piste unique.
-  trackMode: TrackModeChoice;
+  // (mute par instrument) ou un lecteur simplifié à piste unique. Absent
+  // pour un morceau sans piste audio (lyrics-only).
+  trackMode?: TrackModeChoice;
   tracks: TrackMeta[];
   // Fréquence et durée canoniques du morceau, posées par
   // src/firebase/songImport.ts à la finalisation de l'import. Absentes tant
@@ -58,6 +66,7 @@ export interface SongRecord {
   // ces deux champs ne figurent pas dans le modèle de données de CLAUDE.md).
   sampleRate?: number;
   durationSamples?: number;
+  lyrics?: { lines: LyricLine[] };
 }
 
 export interface NewSongInput {
@@ -78,6 +87,14 @@ export interface SongUpdate {
   tracks?: TrackMeta[];
   sampleRate?: number;
   durationSamples?: number;
+  lyrics?: { lines: LyricLine[] };
+}
+
+export interface NewLyricsSongInput {
+  title: string;
+  order: number;
+  createdBy: string;
+  lyrics: { lines: LyricLine[] };
 }
 
 // Forme brute d'un document Firestore : identique à SongRecord sauf
@@ -91,10 +108,11 @@ interface SongFirestoreData {
   tempo?: number;
   key?: string;
   status: SongStatus;
-  trackMode: TrackModeChoice;
+  trackMode?: TrackModeChoice;
   tracks: TrackMeta[];
   sampleRate?: number;
   durationSamples?: number;
+  lyrics?: { lines: LyricLine[] };
 }
 
 function timestampToDate(timestamp: Timestamp): Date {
@@ -120,6 +138,7 @@ function songFromSnapshot(snapshot: DocumentSnapshot<DocumentData>): SongRecord 
     tracks: data.tracks,
     sampleRate: data.sampleRate,
     durationSamples: data.durationSamples,
+    lyrics: data.lyrics,
   };
 }
 
@@ -164,6 +183,25 @@ export async function createDraftSong(input: NewSongInput): Promise<string> {
   return songRef.id;
 }
 
+// Action « paroles » sur un morceau NEUF (docs/lyrics-feature.md §3,
+// « orchestration d'écriture — asymétrie assumée ») : rien à uploader, donc
+// une seule écriture qui crée le document directement en "ready", sans
+// jamais passer par un draft (contrairement au flux audio de songImport.ts).
+export async function createReadySongWithLyrics(input: NewLyricsSongInput): Promise<string> {
+  const data: SongFirestoreData = {
+    title: input.title,
+    order: input.order,
+    createdAt: dateToTimestamp(new Date()),
+    createdBy: input.createdBy,
+    status: "ready",
+    tracks: [],
+    lyrics: input.lyrics,
+  };
+
+  const songRef = await addDoc(collection(firestore, SONGS_COLLECTION), data);
+  return songRef.id;
+}
+
 export async function updateSong(
   songId: string,
   patch: SongUpdate,
@@ -179,4 +217,31 @@ export async function updateSong(
 
 export async function deleteSong(songId: string): Promise<void> {
   await deleteDoc(doc(firestore, SONGS_COLLECTION, songId));
+}
+
+// Conditionne l'onglet Musique et le chargement du moteur audio.
+export function isPlayable(song: SongRecord): boolean {
+  return song.tracks.length > 0;
+}
+
+// Un bloc collé devient des lignes par simple split sur "\n", SANS filtrer
+// les lignes vides (une ligne vide est un séparateur couplet/refrain
+// légitime, cf. docs/lyrics-feature.md §2) et sans trim (le texte est
+// préservé tel quel ; le trim ne sert qu'à juger du contenu, cf.
+// hasLyricsContent ci-dessous).
+export function linesFromBlock(block: string): LyricLine[] {
+  return block.split("\n").map((text) => ({ text }));
+}
+
+// Un ensemble de lignes "a du contenu" s'il en existe au moins une non vide
+// une fois trimmée. Partagé par hasLyrics (morceau déjà enregistré) et par la
+// validation de saisie (avant tout enregistrement) pour ne pas dupliquer ce
+// jugement à deux endroits.
+export function hasLyricsContent(lines: LyricLine[]): boolean {
+  return lines.some((line) => line.text.trim().length > 0);
+}
+
+// Conditionne l'onglet Lyrics : présent ET au moins une ligne non vide.
+export function hasLyrics(song: SongRecord): boolean {
+  return song.lyrics !== undefined && hasLyricsContent(song.lyrics.lines);
 }

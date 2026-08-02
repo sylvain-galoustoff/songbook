@@ -53,7 +53,17 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  color: var(--white);
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  opacity: 0.75;
+  color: var(--textDisabled);
+
+  &.selected {
+    opacity: 1;
+    color: var(--white);
+  }
 
   &.disabled {
     opacity: 0.75;

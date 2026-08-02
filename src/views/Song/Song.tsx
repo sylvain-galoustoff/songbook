@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
+import { IoAddCircleOutline, IoCloudUploadOutline } from "react-icons/io5";
 import { Header } from "../../components/Header/Header";
 import { Loader } from "../../components/Loader/Loader";
-import { getSong, type SongRecord, type TrackMeta } from "../../firebase/songs";
+import { Button } from "../../components/Button/Button";
+import { getSong, hasLyrics, isPlayable, type SongRecord, type TrackMeta } from "../../firebase/songs";
 import { useAudioEngine } from "../../hooks/useAudioEngine";
 import { useRotatingMessage } from "../../hooks/useRotatingMessage";
 import { InstrumentGrid } from "./InstrumentGrid";
 import { AudioControls } from "./AudioControls";
-import { Tabbar } from "./Tabbar";
+import { Tabbar, type SongTab } from "./Tabbar";
 import styles from "./Song.module.scss";
 
 // Référence stable : évite de redéclencher le chargement audio à chaque
@@ -48,6 +50,9 @@ const Song = () => {
   const { id } = useParams<{ id: string }>();
   const [song, setSong] = useState<SongRecord | null>(null);
   const [loading, setLoading] = useState(true);
+  // Onglet par défaut TOUJOURS Musique (écran-roi, uniforme pour tous les
+  // morceaux, cf. docs/lyrics-feature.md §4).
+  const [activeTab, setActiveTab] = useState<SongTab>("musique");
 
   useEffect(() => {
     if (!id) return;
@@ -68,16 +73,20 @@ const Song = () => {
   }, [id]);
 
   // Un morceau "draft" ou sans piste n'est pas jouable (cf. CLAUDE.md
-  // « Format & stockage audio »).
-  const playableSong = song && song.status === "ready" && song.tracks.length > 0 ? song : null;
+  // « Format & stockage audio », isPlayable dans firebase/songs.ts).
+  const playableSong = song && song.status === "ready" && isPlayable(song) ? song : null;
   const player = useAudioEngine(playableSong?.id ?? null, playableSong?.tracks ?? EMPTY_TRACKS);
   // Mode simple piste (cf. CLAUDE.md `trackMode`) : pas de mute possible,
   // donc pas de grille d'instruments — seuls les contrôles de lecture restent.
   const isSingleTrack = playableSong?.trackMode === "single";
+  const songHasLyrics = song !== null && hasLyrics(song);
 
   const headerTitle = loading ? "Chargement…" : (song?.title ?? "Morceau introuvable");
   const progress = player.duration > 0 ? player.position / player.duration : 0;
-  const audioLoading = player.status === "idle" || player.status === "loading";
+  // idle/loading ne signale un chargement audio en cours que pour un morceau
+  // effectivement playable (sinon useAudioEngine reste "idle" indéfiniment,
+  // faute de pistes à charger — cf. useAudioEngine.ts).
+  const audioLoading = playableSong !== null && (player.status === "idle" || player.status === "loading");
   const showLoader = loading || audioLoading;
 
   const fetching = audioLoading && player.loadProgress?.phase === "fetching";
@@ -92,40 +101,67 @@ const Song = () => {
     <div className={styles.Song}>
       <Header title={headerTitle} onBack={() => navigate("/")} />
       <div className={isSingleTrack ? `${styles.body} ${styles.singleTrack}` : styles.body}>
-        {showLoader && <Loader message={loaderMessage} progress={loaderProgress} />}
+        {loading && <Loader message={loaderMessage} progress={loaderProgress} />}
         {!loading && !song && <p className={styles.notice}>Morceau introuvable.</p>}
-        {!loading && song && !playableSong && (
-          <p className={styles.notice}>Ce morceau n’est pas encore disponible.</p>
-        )}
-        {playableSong && player.status === "error" && (
-          <p className={styles.notice}>{player.loadError}</p>
-        )}
-        {playableSong && player.status === "ready" && (
+        {!loading && song && activeTab === "musique" && (
           <>
-            {!isSingleTrack && (
-              <InstrumentGrid
-                tracks={player.tracks}
-                mutedTracks={player.mutedTracks}
-                onToggleMute={player.toggleTrackMute}
-              />
+            {playableSong ? (
+              <>
+                {audioLoading && <Loader message={loaderMessage} progress={loaderProgress} />}
+                {player.status === "error" && (
+                  <p className={styles.notice}>{player.loadError}</p>
+                )}
+                {player.status === "ready" && (
+                  <>
+                    {!isSingleTrack && (
+                      <InstrumentGrid
+                        tracks={player.tracks}
+                        mutedTracks={player.mutedTracks}
+                        onToggleMute={player.toggleTrackMute}
+                      />
+                    )}
+                    <AudioControls
+                      isPlaying={player.isPlaying}
+                      disabled={false}
+                      progress={progress}
+                      durationSamples={player.duration}
+                      loop={player.loop}
+                      onTogglePlay={player.togglePlayPause}
+                      onSeek={(index) => {
+                        player.seek(index);
+                        player.commitSeek();
+                      }}
+                      onToggleLoop={player.toggleLoop}
+                    />
+                  </>
+                )}
+              </>
+            ) : (
+              <div className={styles.emptyState}>
+                <p className={styles.notice}>Il n’y a pas encore de piste audio</p>
+                {/* TODO(session 6, docs/lyrics-feature.md §11) : brancher
+                    l'action audio réutilisable sur ce bouton. */}
+                <Button icon={<IoCloudUploadOutline size={24} />}>Ajouter de l’audio</Button>
+              </div>
             )}
-            <AudioControls
-              isPlaying={player.isPlaying}
-              disabled={false}
-              progress={progress}
-              durationSamples={player.duration}
-              loop={player.loop}
-              onTogglePlay={player.togglePlayPause}
-              onSeek={(index) => {
-                player.seek(index);
-                player.commitSeek();
-              }}
-              onToggleLoop={player.toggleLoop}
-            />
+          </>
+        )}
+        {!loading && song && activeTab === "lyrics" && (
+          <>
+            {songHasLyrics ? (
+              <div>lyrics</div>
+            ) : (
+              <div className={styles.emptyState}>
+                <p className={styles.notice}>Pas de paroles</p>
+                {/* TODO(session 5, docs/lyrics-feature.md §3) : brancher la
+                    route dédiée /song/:songId/lyrics/edit sur ce bouton. */}
+                <Button icon={<IoAddCircleOutline size={24} />}>Créer les paroles</Button>
+              </div>
+            )}
           </>
         )}
       </div>
-      <Tabbar />
+      <Tabbar activeTab={activeTab} onTabChange={setActiveTab} lyricsEnabled={songHasLyrics} />
     </div>
   );
 };
