@@ -1,6 +1,7 @@
 import { createBrowserRouter, Outlet } from "react-router";
 import Home from "../views/Home/Home.tsx";
 import Song from "../views/Song/Song.tsx";
+import LyricsEdit from "../views/Song/LyricsEdit/LyricsEdit.tsx";
 import LogIn from "../views/LogIn/LogIn.tsx";
 import SongName from "../views/NewSong/SongName/SongName.tsx";
 import SongAction from "../views/NewSong/SongAction/SongAction.tsx";
@@ -27,6 +28,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <Song />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/song/:songId/lyrics/edit",
+    element: (
+      <ProtectedRoute>
+        <LyricsEdit />
       </ProtectedRoute>
     ),
   },

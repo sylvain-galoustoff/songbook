@@ -116,3 +116,16 @@
     background: var(--secondary);
   }
 }
+
+.editButton {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--corner);
+  background: var(--primary);
+  color: var(--white);
+  text-decoration: none;
+}

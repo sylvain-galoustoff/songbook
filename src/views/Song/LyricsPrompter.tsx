@@ -1,10 +1,12 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
-import { IoPause, IoPlay } from "react-icons/io5";
+import { Link } from "react-router";
+import { IoCreateOutline, IoPause, IoPlay } from "react-icons/io5";
 import type { LyricLine } from "../../firebase/songs";
 import styles from "./LyricsPrompter.module.scss";
 
 interface LyricsPrompterProps {
+  songId: string;
   lines: LyricLine[];
 }
 
@@ -71,7 +73,7 @@ function readStoredRate(): number {
   return DEFAULT_RATE;
 }
 
-export const LyricsPrompter = ({ lines }: LyricsPrompterProps) => {
+export const LyricsPrompter = ({ songId, lines }: LyricsPrompterProps) => {
   const [fontSize, setFontSize] = useState<FontSize>(readStoredFontSize);
   const [rate, setRate] = useState<number>(readStoredRate);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -247,6 +249,13 @@ export const LyricsPrompter = ({ lines }: LyricsPrompterProps) => {
             </button>
           ))}
         </div>
+        <Link
+          to={`/song/${songId}/lyrics/edit`}
+          className={styles.editButton}
+          aria-label="Éditer les paroles"
+        >
+          <IoCreateOutline size={22} />
+        </Link>
       </div>
     </div>
   );

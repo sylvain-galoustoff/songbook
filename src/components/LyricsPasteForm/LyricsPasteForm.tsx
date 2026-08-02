@@ -6,6 +6,14 @@ import styles from "./LyricsPasteForm.module.scss";
 interface LyricsPasteFormProps {
   submitLabel: string;
   submittingLabel: string;
+  // Pré-remplissage pour l'édition (docs/lyrics-feature.md §3) : bloc déjà
+  // reconstruit via joinLinesToBlock. Absent/vide = chemin « coller »
+  // (session 3) inchangé.
+  initialText?: string;
+  // Bulle chaque frappe vers l'appelant, pour une garde « modifications non
+  // enregistrées » côté page d'édition — cf. LyricsEdit. Optionnel, sans
+  // effet sur le chemin morceau-neuf.
+  onTextChange?: (text: string) => void;
   // Reçoit les lignes déjà découpées (cf. linesFromBlock) ; à charge de
   // l'appelant de choisir l'écriture Firestore (création vs mise à jour,
   // cf. docs/lyrics-feature.md §3).
@@ -15,10 +23,21 @@ interface LyricsPasteFormProps {
 const EMPTY_LYRICS_ERROR = "Ajoutez au moins une ligne de paroles.";
 const SAVE_ERROR = "Une erreur est survenue pendant l'enregistrement des paroles.";
 
-export const LyricsPasteForm = ({ submitLabel, submittingLabel, onSubmit }: LyricsPasteFormProps) => {
-  const [text, setText] = useState("");
+export const LyricsPasteForm = ({
+  submitLabel,
+  submittingLabel,
+  initialText,
+  onTextChange,
+  onSubmit,
+}: LyricsPasteFormProps) => {
+  const [text, setText] = useState(initialText ?? "");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleChange = (value: string) => {
+    setText(value);
+    onTextChange?.(value);
+  };
 
   const handleSubmit = async () => {
     const lines = linesFromBlock(text);
@@ -44,7 +63,7 @@ export const LyricsPasteForm = ({ submitLabel, submittingLabel, onSubmit }: Lyri
         <textarea
           className={styles.textarea}
           value={text}
-          onChange={(event) => setText(event.target.value)}
+          onChange={(event) => handleChange(event.target.value)}
           placeholder="Collez les paroles ici…"
         />
       </div>

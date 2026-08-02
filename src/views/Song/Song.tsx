@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 import { IoAddCircleOutline, IoCloudUploadOutline } from "react-icons/io5";
 import { Header } from "../../components/Header/Header";
 import { Loader } from "../../components/Loader/Loader";
@@ -46,14 +46,25 @@ const DECODE_FLAVORS = [
   "Presque prêt à jouer…",
 ] as const;
 
+// L'onglet par défaut reste TOUJOURS Musique (écran-roi, uniforme, cf.
+// docs/lyrics-feature.md §4) — sauf retour explicite depuis la page
+// d'édition des paroles (LyricsEdit), qui demande l'onglet Lyrics via
+// `location.state` pour que les paroles à jour soient visibles immédiatement.
+function initialTabFromLocationState(state: unknown): SongTab {
+  if (state && typeof state === "object" && "initialTab" in state) {
+    const value = (state as { initialTab?: unknown }).initialTab;
+    if (value === "lyrics" || value === "musique" || value === "accords") return value;
+  }
+  return "musique";
+}
+
 const Song = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams<{ id: string }>();
   const [song, setSong] = useState<SongRecord | null>(null);
   const [loading, setLoading] = useState(true);
-  // Onglet par défaut TOUJOURS Musique (écran-roi, uniforme pour tous les
-  // morceaux, cf. docs/lyrics-feature.md §4).
-  const [activeTab, setActiveTab] = useState<SongTab>("musique");
+  const [activeTab, setActiveTab] = useState<SongTab>(() => initialTabFromLocationState(location.state));
 
   useEffect(() => {
     if (!id) return;
@@ -150,13 +161,13 @@ const Song = () => {
         {!loading && song && activeTab === "lyrics" && (
           <>
             {songHasLyrics && song.lyrics ? (
-              <LyricsPrompter key={song.id} lines={song.lyrics.lines} />
+              <LyricsPrompter key={song.id} songId={song.id} lines={song.lyrics.lines} />
             ) : (
               <div className={styles.emptyState}>
                 <p className={styles.notice}>Pas de paroles</p>
-                {/* TODO(session 5, docs/lyrics-feature.md §3) : brancher la
-                    route dédiée /song/:songId/lyrics/edit sur ce bouton. */}
-                <Button icon={<IoAddCircleOutline size={24} />}>Créer les paroles</Button>
+                <Button icon={<IoAddCircleOutline size={24} />} to={`/song/${song.id}/lyrics/edit`}>
+                  Créer les paroles
+                </Button>
               </div>
             )}
           </>

@@ -233,6 +233,12 @@ export function linesFromBlock(block: string): LyricLine[] {
   return block.split("\n").map((text) => ({ text }));
 }
 
+// Inverse exact de linesFromBlock, pour pré-remplir la surface d'édition
+// (docs/lyrics-feature.md §3) : simple jointure sur "\n", sans trim ni filtre.
+export function joinLinesToBlock(lines: LyricLine[]): string {
+  return lines.map((line) => line.text).join("\n");
+}
+
 // Un ensemble de lignes "a du contenu" s'il en existe au moins une non vide
 // une fois trimmée. Partagé par hasLyrics (morceau déjà enregistré) et par la
 // validation de saisie (avant tout enregistrement) pour ne pas dupliquer ce
