@@ -9,4 +9,10 @@
 
   --font-heading: "Alegreya Sans", sans-serif;
   --font-body: "Work Sans", sans-serif;
+
+  /* Tailles de police du prompteur lyrics (docs/lyrics-feature.md §6) :
+     set fermé de 3 crans, jamais de valeur en dur dans le composant. */
+  --lyrics-font-sm: 1rem;
+  --lyrics-font-md: 1.5rem;
+  --lyrics-font-lg: 2rem;
 }

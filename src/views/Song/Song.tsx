@@ -9,6 +9,7 @@ import { useAudioEngine } from "../../hooks/useAudioEngine";
 import { useRotatingMessage } from "../../hooks/useRotatingMessage";
 import { InstrumentGrid } from "./InstrumentGrid";
 import { AudioControls } from "./AudioControls";
+import { LyricsPrompter } from "./LyricsPrompter";
 import { Tabbar, type SongTab } from "./Tabbar";
 import styles from "./Song.module.scss";
 
@@ -148,8 +149,8 @@ const Song = () => {
         )}
         {!loading && song && activeTab === "lyrics" && (
           <>
-            {songHasLyrics ? (
-              <div>lyrics</div>
+            {songHasLyrics && song.lyrics ? (
+              <LyricsPrompter key={song.id} lines={song.lyrics.lines} />
             ) : (
               <div className={styles.emptyState}>
                 <p className={styles.notice}>Pas de paroles</p>
