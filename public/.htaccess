@@ -1,0 +1,25 @@
+# Type MIME correct pour les modules JS (ceinture + bretelles)
+AddType application/javascript .js .mjs
+AddType text/css .css
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  # Ne JAMAIS réécrire un fichier ou dossier réel (assets, sw.js, manifest…)
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+  # Tout le reste -> index.html (routing SPA client)
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Assets hashés = immuables (le hash change à chaque build)
+  <FilesMatch "\.(js|mjs|css|woff2|png|svg|ico)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  # Le shell et le SW ne doivent JAMAIS être mis en cache (last-match gagne)
+  <FilesMatch "^(index\.html|sw\.js|registerSW\.js|manifest\.webmanifest)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>

@@ -7,7 +7,14 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: "prompt",
+      // Un client bloqué sur un SW cassé (cf. correctif navigateFallbackDenylist
+      // ci-dessous) doit se réparer seul, sans manip côté utilisateur : le SW
+      // s'active et recharge la page automatiquement dès qu'une version plus
+      // récente est détectée. Compromis assumé : un reload peut interrompre
+      // une lecture audio en cours si la détection tombe en pleine répétition
+      // (cf. src/components/PwaUpdatePrompt, qui ne fait plus qu'enregistrer
+      // le SW, sans bannière de confirmation).
+      registerType: "autoUpdate",
       injectRegister: false,
       // Precache uniquement le shell applicatif : jamais l'audio (mp3/flac).
       // Aucune règle de runtimeCaching n'est ajoutée pour l'audio non plus,
@@ -23,6 +30,22 @@ export default defineConfig({
           "icons/pwa-192-maskable.png",
           "icons/maskable-icon-512x512.png",
         ],
+        // Sans ça, le SW sert index.html (navigateFallback) en réponse à une
+        // requête d'asset non précaché après redéploiement (ex. chunk JS dont
+        // le hash a changé) : le navigateur reçoit du HTML avec un
+        // Content-Type text/html là où il attendait un module JS -> page
+        // blanche. On exclut donc explicitement /assets/ et toute URL avec
+        // extension de fichier du fallback SPA, qui ne doit s'appliquer
+        // qu'aux véritables navigations (routes client).
+        navigateFallbackDenylist: [/^\/assets\//, /\.[^/?]+$/],
+        cleanupOutdatedCaches: true,
+        // injectRegister: false empêche le plugin de les forcer lui-même
+        // (il ne le fait que si injectRegister vaut "auto"/null) : sans ça,
+        // le nouveau SW resterait en attente jusqu'à fermeture complète de
+        // l'onglet, comme en registerType "prompt" — on perdrait la
+        // réparation immédiate visée par "autoUpdate".
+        skipWaiting: true,
+        clientsClaim: true,
       },
       manifest: {
         name: "Songbook",
