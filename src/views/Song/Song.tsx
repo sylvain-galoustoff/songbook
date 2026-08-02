@@ -93,6 +93,9 @@ const Song = () => {
   // donc pas de grille d'instruments — seuls les contrôles de lecture restent.
   const isSingleTrack = playableSong?.trackMode === "single";
   const songHasLyrics = song !== null && hasLyrics(song);
+  const bodyClassName = [styles.body, isSingleTrack && styles.singleTrack, activeTab === "accords" && styles.chordsTab]
+    .filter(Boolean)
+    .join(" ");
 
   const headerTitle = loading ? "Chargement…" : (song?.title ?? "Morceau introuvable");
   const progress = player.duration > 0 ? player.position / player.duration : 0;
@@ -113,7 +116,7 @@ const Song = () => {
   return (
     <div className={styles.Song}>
       <Header title={headerTitle} onBack={() => navigate("/")} />
-      <div className={isSingleTrack ? `${styles.body} ${styles.singleTrack}` : styles.body}>
+      <div className={bodyClassName}>
         {loading && <Loader message={loaderMessage} progress={loaderProgress} />}
         {!loading && !song && <p className={styles.notice}>Morceau introuvable.</p>}
         {!loading && song && activeTab === "musique" && (

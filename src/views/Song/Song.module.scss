@@ -26,6 +26,13 @@
   padding: 64px 32px;
 }
 
+// Onglet Accords : padding vertical réduit de moitié par rapport aux autres
+// onglets (grille resserrée, bouton Modifier/Terminé bien visible).
+.chordsTab {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
 .notice {
   flex: 1 0 0;
   display: flex;

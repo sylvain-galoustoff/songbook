@@ -9,6 +9,14 @@
   gap: 16px;
 }
 
+// Bouton Modifier/Terminé (bascule lecture/édition) : toujours en bas de la
+// vue (sous le compositeur en édition, sous la grille en lecture).
+.toolbar {
+  display: flex;
+  width: 100%;
+  flex-shrink: 0;
+}
+
 // Parties + bouton d'ajout : seule cette zone scrolle, le compositeur reste
 // fixe en bas (docs/chords-feature.md §5, compositeur permanent).
 .sections {

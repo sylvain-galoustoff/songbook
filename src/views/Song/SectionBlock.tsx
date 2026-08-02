@@ -7,19 +7,26 @@ import styles from "./SectionBlock.module.scss";
 
 interface SectionBlockProps {
   section: ChordSection;
+  // Bascule d'affichage (cf. ChordsView) : masque le renommage/suppression de
+  // partie et retombe les cartes sur leur rendu lecture seule (pas d'onSelect/
+  // onDelete transmis à ChordCard).
+  readOnly: boolean;
   isActive: boolean;
-  onActivate: () => void;
-  onRename: (name: string) => void;
-  onDelete: () => void;
+  // Absents en lecture : activer une partie ou modifier son nom/suppression
+  // n'a de sens qu'en édition (cible du compositeur, outils d'édition).
+  onActivate?: () => void;
+  onRename?: (name: string) => void;
+  onDelete?: () => void;
   // Index de l'accord sélectionné DANS CETTE PARTIE, ou null si la sélection
   // en cours (état porté par ChordsView) est ailleurs ou absente.
   selectedChordIndex: number | null;
-  onSelectChord: (index: number) => void;
-  onDeleteChord: (index: number) => void;
+  onSelectChord?: (index: number) => void;
+  onDeleteChord?: (index: number) => void;
 }
 
 export const SectionBlock = ({
   section,
+  readOnly,
   isActive,
   onActivate,
   onRename,
@@ -39,7 +46,7 @@ export const SectionBlock = ({
   const commitRename = () => {
     const trimmed = draftName.trim();
     if (trimmed.length > 0 && trimmed !== section.name) {
-      onRename(trimmed);
+      onRename?.(trimmed);
     }
     setIsEditing(false);
   };
@@ -57,20 +64,20 @@ export const SectionBlock = ({
   const handleHeaderKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      onActivate();
+      onActivate?.();
     }
   };
 
-  const headerClassName = isActive ? `${styles.header} ${styles.active}` : styles.header;
+  const headerClassName = !readOnly && isActive ? `${styles.header} ${styles.active}` : styles.header;
 
   return (
     <div className={styles.SectionBlock}>
       <div
         className={headerClassName}
-        role="button"
-        tabIndex={0}
-        onClick={onActivate}
-        onKeyDown={handleHeaderKeyDown}
+        role={readOnly ? undefined : "button"}
+        tabIndex={readOnly ? undefined : 0}
+        onClick={readOnly ? undefined : onActivate}
+        onKeyDown={readOnly ? undefined : handleHeaderKeyDown}
       >
         {isEditing ? (
           <input
@@ -85,30 +92,32 @@ export const SectionBlock = ({
         ) : (
           <p className={styles.name}>{section.name}</p>
         )}
-        <div className={styles.actions}>
-          <button
-            type="button"
-            className={styles.iconButton}
-            aria-label="Renommer la partie"
-            onClick={(event) => {
-              event.stopPropagation();
-              startRename();
-            }}
-          >
-            <IoPencilOutline size={20} />
-          </button>
-          <button
-            type="button"
-            className={styles.iconButton}
-            aria-label="Supprimer la partie"
-            onClick={(event) => {
-              event.stopPropagation();
-              onDelete();
-            }}
-          >
-            <IoTrashOutline size={20} />
-          </button>
-        </div>
+        {!readOnly && (
+          <div className={styles.actions}>
+            <button
+              type="button"
+              className={styles.iconButton}
+              aria-label="Renommer la partie"
+              onClick={(event) => {
+                event.stopPropagation();
+                startRename();
+              }}
+            >
+              <IoPencilOutline size={20} />
+            </button>
+            <button
+              type="button"
+              className={styles.iconButton}
+              aria-label="Supprimer la partie"
+              onClick={(event) => {
+                event.stopPropagation();
+                onDelete?.();
+              }}
+            >
+              <IoTrashOutline size={20} />
+            </button>
+          </div>
+        )}
       </div>
       {section.chords.length > 0 && (
         <div className={styles.cards}>
@@ -116,9 +125,9 @@ export const SectionBlock = ({
             <ChordCard
               key={index}
               chord={chord}
-              selected={selectedChordIndex === index}
-              onSelect={() => onSelectChord(index)}
-              onDelete={() => onDeleteChord(index)}
+              selected={!readOnly && selectedChordIndex === index}
+              onSelect={readOnly ? undefined : () => onSelectChord?.(index)}
+              onDelete={readOnly ? undefined : () => onDeleteChord?.(index)}
             />
           ))}
         </div>
